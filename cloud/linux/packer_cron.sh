@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cd /usr/local/devit/packer/cloud/linux/
+. openrc
+
 # Generate quarter and year string and full image name
 QDATE=$(date +%Y)Q$(( ($(date +%-m)-1)/3+1 ))
 IMAGE_NAME="CentOS7-DevIT-Final-$QDATE"
