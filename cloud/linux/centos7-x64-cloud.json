@@ -1,0 +1,37 @@
+{
+  "builders": [{
+        "type": "openstack",
+        "ssh_pty" : true,
+        "ssh_username": "devlocal",
+        "ssh_keypair_name": "cloud-key",
+        "ssh_private_key_file": "cloud-key.pem",
+        "image_name": "IMAGE_NAME",
+        "source_image": "47d37ce4-46bc-4ef9-894c-0b9fa4663f3e",
+        "flavor": "GEN.cpu04.ram04G.hd0G"
+  }],
+  "provisioners": [
+   {
+    "type": "shell",
+    "script": "scripts/post_install_cloud.sh"
+   },
+   {
+    "type": "file",
+    "source": "tests",
+    "destination": "/tmp"
+   },
+   {
+    "type": "shell",
+    "script": "scripts/serverspec.sh"
+   },
+   {
+    "type": "file",
+    "source": "scripts/domain_join_kerb_cloud.sh",
+    "destination": "/home/devlocal/domain_join.sh"
+   },
+   {
+    "type": "file",
+    "source": "scripts/install_puppet.sh",
+    "destination": "/home/devlocal/install_puppet.sh"
+   }
+ ]
+}

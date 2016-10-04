@@ -1,0 +1,37 @@
+{
+  "builders": [{
+      "type": "vmware-iso",
+      "iso_url": "https://dvcobblervl01.dev.tsi.lan/iso/CentOS-7-x86_64-Minimal-1511.iso",
+      "iso_checksum": "88c0437f0a14c6e2c94426df9d43cd67",
+      "iso_checksum_type": "md5",
+      "ssh_username": "packer",
+      "shutdown_command": "shutdown -P now",
+      "boot_command": ["<tab> biosdevname=0 net.ifnames=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7-vmware.cfg<enter><wait>"],
+      "boot_wait": "10s",
+      "http_directory": "http",
+      "ssh_username": "root",
+      "ssh_password": "k9isa2th",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "sed -i '/HWADDR/d' /etc/sysconfig/network-scripts/ifcfg-eth0; echo '/sbin/halt -h -p' > shutdown.sh; sh 'shutdown.sh'",
+      "vmx_data": {
+        "virtualHW.version": "11",
+        "ethernet0.networkName": "VLAN 1520 - 10.26.128.0/23 - DevIT",
+        "ethernet0.present": "TRUE",
+        "ethernet0.virtualDev": "vmxnet3",
+        "memsize": "2048",
+        "numvcpus": "1",
+        "cpuid.coresPerSocket": "1",
+        "scsi0:0.fileName": "disk.vmdk",
+        "scsi0:0.present": "TRUE",
+        "scsi0:0.redo": "",
+        "ide0:0.present": "FALSE"
+        },
+        "vmx_data_post": {
+        "ide1:0.startConnected" : "FALSE",
+        "ide1:0.deviceType" : "atapi-cdrom",
+        "ide1:0.fileName" : "cdrom0",
+        "ide1:0.present" : "TRUE"
+        }
+     }]
+}
