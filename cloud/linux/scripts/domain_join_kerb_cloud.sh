@@ -22,6 +22,11 @@ realm = TSI.LAN
 security = ads
 EOF
 
+# Test if hostname is > 15 characters, and if so truncate and add to samba netbios name param
+HOST=$(hostname -s)
+echo $HOST
+if [ ${#HOST} -ge 15 ]; then echo netbios name = ${HOST:0:15} >> /etc/samba/smb.conf; fi
+
 cat > /etc/sssd/sssd.conf <<EOF
 [sssd]
 domains = tsi.lan
