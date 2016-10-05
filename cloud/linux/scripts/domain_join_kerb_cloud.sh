@@ -23,10 +23,13 @@ security = ads
 EOF
 
 # Test if hostname is > 15 characters, and if so truncate and add to samba netbios name param
+RED='\033[0;31m'
+NC='\033[0m'
 HOST=$(hostname -s)
 if [ ${#HOST} -ge 15 ]; then
-   NEW_UUID=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)
-   echo netbios name = ${HOST:0:7}-$NEW_UUID >> /etc/samba/smb.conf
+   echo -e "${RED}WARNING${NC}: This instance was created with a name longer than 15 characters"
+   echo -e "${RED}WARNING${NC}: Please delete this instance and create one with a name of 15 characters or less"
+   exit 1
 fi
 
 cat > /etc/sssd/sssd.conf <<EOF
