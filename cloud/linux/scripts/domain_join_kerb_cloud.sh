@@ -9,7 +9,7 @@ fi
 RED='\033[0;31m'
 NC='\033[0m'
 HOST=$(hostname -s)
-if [ ${#HOST} -ge 15 ]; then
+if [ ${#HOST} -gt 15 ]; then
    echo -e "${RED}WARNING${NC}: This instance was created with a name longer than 15 characters"
    echo -e "${RED}WARNING${NC}: Please delete this instance and create one with a name of 15 characters or less"
    exit 1
