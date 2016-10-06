@@ -5,6 +5,16 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# Test if hostname is > 15 characters, and if so truncate and add to samba netbios name param
+RED='\033[0;31m'
+NC='\033[0m'
+HOST=$(hostname -s)
+if [ ${#HOST} -ge 15 ]; then
+   echo -e "${RED}WARNING${NC}: This instance was created with a name longer than 15 characters"
+   echo -e "${RED}WARNING${NC}: Please delete this instance and create one with a name of 15 characters or less"
+   exit 1
+fi
+
 /usr/bin/yum -y install realmd sssd oddjob oddjob-mkhomedir adcli samba-common ntpdate ntp krb5-workstation sssd-tools redhat-lsb-core
 
 /usr/sbin/authconfig --enablesssd --enablesssdauth --enablemkhomedir --update
@@ -21,16 +31,6 @@ kerberos method = secrets and keytab
 realm = TSI.LAN
 security = ads
 EOF
-
-# Test if hostname is > 15 characters, and if so truncate and add to samba netbios name param
-RED='\033[0;31m'
-NC='\033[0m'
-HOST=$(hostname -s)
-if [ ${#HOST} -ge 15 ]; then
-   echo -e "${RED}WARNING${NC}: This instance was created with a name longer than 15 characters"
-   echo -e "${RED}WARNING${NC}: Please delete this instance and create one with a name of 15 characters or less"
-   exit 1
-fi
 
 cat > /etc/sssd/sssd.conf <<EOF
 [sssd]
