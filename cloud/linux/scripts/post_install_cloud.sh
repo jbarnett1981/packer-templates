@@ -58,7 +58,7 @@ zabbix ALL=NOPASSWD: /etc/init.d/puppet restart
 builder  ALL=(ALL)  NOPASSWD: ALL
 
 # Allow following groups full admin with password prompt
-%devit  ALL=(ALL)       ALL
+%devit  ALL=(ALL)   NOPASSWD: ALL
 %development    ALL=(ALL)       ALL
 EOF'
 sudo chmod 644 /etc/sudoers.d/tableau-devit
