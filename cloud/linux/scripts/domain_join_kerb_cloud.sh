@@ -82,6 +82,9 @@ sed -i 's/.*KerberosAuthentication.*/KerberosAuthentication yes/' /etc/ssh/sshd_
 sed -i 's/.*KerberosOrLocalPasswd.*/KerberosOrLocalPasswd yes/' /etc/ssh/sshd_config
 sed -i 's/.*KerberosTicketCleanup.*/KerberosTicketCleanup yes/' /etc/ssh/sshd_config
 
+sed -i 's/^PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sed -i 's/^ChallengeResponseAuthentication.*/ChallengeResponseAuthentication yes/' /etc/ssh/sshd_config
+
 sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication yes/' /etc/ssh/sshd_config
 sed -i 's/.*GSSAPICleanupCredentials.*/GSSAPICleanupCredentials yes/' /etc/ssh/sshd_config
 sed -i 's/.*GSSAPIStrictAcceptorCheck.*/GSSAPIStrictAcceptorCheck no/' /etc/ssh/sshd_config

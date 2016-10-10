@@ -6,6 +6,9 @@ if [[ $swtype == "Red Hat" ]]; then
 sudo /usr/sbin/subscription-manager register --username=devit-tableau --password=P@ssw0rd! --auto-attach --force
 fi
 
+# Configure timezone
+sudo timedatectl set-timezone America/Los_Angeles
+
 # Install firewalld but disable and stop it
 sudo yum install -y firewalld
 sudo systemctl disable firewalld
