@@ -18,8 +18,6 @@ describe file('/etc/issue.net') do
 end
 
 describe file('/etc/ssh/sshd_config') do
-  its(:content) { should match /PermitRootLogin yes/ }
-  its(:content) { should match /UsePrivilegeSeparation yes/ }
   its(:content) { should match /ClientAliveInterval 300/ }
   its(:content) { should match /Banner \/etc\/issue/ }
 end
