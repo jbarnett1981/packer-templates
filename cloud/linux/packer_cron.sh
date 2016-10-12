@@ -10,6 +10,16 @@ then
   exit 1
 fi
 
+# if [ "$1" != "centos7"] && [ "$1" != "ubuntu1404"]; then
+#    echo "Unsupported argument."
+#    exit 1
+# fi
+
+if ! [[ "$1" =~ ^(centos7|ubuntu1404)$ ]]; then
+  echo "Unsupported argument. Use 'centos7 or 'ubuntu1404'."
+  exit 1
+fi
+
 # Change to working dir
 cd /usr/local/devit/packer/cloud/linux/
 . openrc
