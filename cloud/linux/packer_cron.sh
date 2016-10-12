@@ -6,7 +6,7 @@ if [ $# -lt "$MINPARAMS" ]
 then
   echo
   echo "This script needs at least $MINPARAMS command-line arguments!"
-  echo "Ex: bash \"`basename $0`\" centos7|ubuntu1404"
+  echo "Ex: bash `basename $0` centos7|ubuntu1404"
   exit 1
 fi
 
