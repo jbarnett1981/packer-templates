@@ -248,8 +248,6 @@ sudo chmod 0400 /etc/crontab
 
 #### Configure sshd
 sudo runuser -l root -c 'cat >> /etc/ssh/sshd_config <<EOF
-PermitRootLogin yes
-UsePrivilegeSeparation yes
 ClientAliveInterval 300
 Banner /etc/issue
 EOF'

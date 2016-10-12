@@ -6,22 +6,18 @@
         "ssh_keypair_name": "cloud-key",
         "ssh_private_key_file": "cloud-key.pem",
         "image_name": "IMAGE_NAME",
-        "source_image": "47d37ce4-46bc-4ef9-894c-0b9fa4663f3e",
+        "source_image": "f2035309-4773-4c9c-adc7-09df2e0130fe",
         "flavor": "GEN.cpu04.ram04G.hd0G"
   }],
   "provisioners": [
    {
     "type": "shell",
-    "script": "scripts/post_install_cloud_centos.sh"
+    "script": "scripts/post_install_cloud_ubuntu.sh"
    },
    {
     "type": "file",
     "source": "tests",
     "destination": "/tmp"
-   },
-   {
-    "type": "shell",
-    "script": "scripts/serverspec.sh"
    },
    {
     "type": "file",
