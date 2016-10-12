@@ -15,15 +15,6 @@ EOF"
 
 sudo /sbin/resolvconf -u
 
-# Configure eth0 with DOMAIN parameter to pass to NetworkManager
-# temp test
-sudo /bin/cp /etc/network/interfaces /etc/network/interfaces.bu
-
-sudo bash -c "/bin/cat > /etc/network/interfaces <<EOF
-dns-nameservers 10.26.160.31 10.26.160.32
-dns-search tsi.lan dev.tsi.lan tableaucorp.com db.tsi.lan test.tsi.lan
-EOF"
-
 # Install required tools
 sudo /usr/bin/apt-get install -y openssh-server build-essential nfs-common git smbclient cifs-utils wget sysv-rc-conf vim
 
