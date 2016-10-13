@@ -6,15 +6,39 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Install puppet repo
-rpm -Uvh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+swver=$(lsb_release -d | awk '{print $2}')
 
-# Install latest puppet agent
-yum install -y puppet
+if [ $swver = "CentOS" ]; then
 
-# Add in Tableau specific puppet.conf
-curl -o /etc/puppet/puppet.conf http://puppetshare.dev.tsi.lan/puppet/Linux/PuppetOG/puppet.conf
+   # Install puppet repo
+   rpm -Uvh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
 
-# Enable and start puppet service
-systemctl enable puppet.service
-systemctl start puppet.service
+   # Install latest puppet agent
+   yum install -y puppet
+
+   # Add in Tableau specific puppet.conf
+   curl -o /etc/puppet/puppet.conf http://puppetshare.dev.tsi.lan/puppet/Linux/PuppetOG/puppet.conf
+
+   # Enable and start puppet service
+   systemctl enable puppet.service
+   systemctl start puppet.service
+fi
+
+if [ $swver = "Ubuntu" ]; then
+
+   # Install apt repo
+   cd /tmp
+   wget https://apt.puppetlabs.com/puppetlabs-release-trusty.deb
+   sudo dpkg -i /tmp/puppetlabs-release-trusty.deb
+   sudo apt-get update
+
+   # Install latest puppet agent
+   sudo apt-get install -y puppet
+
+   # Add in Tableau specific puppet.conf
+   curl -o /etc/puppet/puppet.conf http://puppetshare.dev.tsi.lan/puppet/Linux/PuppetOG/puppet.conf
+
+   # Enable and start puppet service
+   sudo sed -i 's/^START.*/START=yes/' /etc/default/puppet
+   sudo service puppet start
+fi

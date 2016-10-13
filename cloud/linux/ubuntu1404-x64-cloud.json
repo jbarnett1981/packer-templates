@@ -6,7 +6,7 @@
         "ssh_keypair_name": "cloud-key",
         "ssh_private_key_file": "cloud-key.pem",
         "image_name": "IMAGE_NAME",
-        "source_image": "c03fdfa4-291b-4ca2-830c-74eb7d4d766a",
+        "source_image": "8173f1ab-2816-4bd4-aa3b-1a85360ff714",
         "flavor": "GEN.cpu04.ram04G.hd0G"
   }],
   "provisioners": [
