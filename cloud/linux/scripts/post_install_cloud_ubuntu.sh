@@ -21,7 +21,20 @@ sudo /sbin/resolvconf -u
 # Install required tools
 sudo /usr/bin/apt-get install -y openssh-server build-essential nfs-common git smbclient cifs-utils wget sysv-rc-conf vim
 
-# Replace sudoers file
+# Add Tableau DevIT sudoers file
+sudo bash -c "cat > /etc/sudoers.d/tableau-devit <<EOF
+# Tableau DevIT Managed
+# Allow zabbix user to restart puppet agent
+zabbix ALL=NOPASSWD: /etc/init.d/puppet restart
+
+# Allow following accounts full admin with no password prompt
+builder  ALL=(ALL)  NOPASSWD: ALL
+
+# Allow following groups full admin with password prompt
+%devit  ALL=(ALL)   NOPASSWD: ALL
+%development    ALL=(ALL)       ALL
+EOF"
+sudo chmod 644 /etc/sudoers.d/tableau-devit
 
 ### base build is complete ###
 
@@ -49,33 +62,12 @@ disk / 15%
 load 8 8 8
 EOF"
 
-## Configure sysconfig/snmpd
-#echo "OPTIONS=\"-LS0-5d -Lf /dev/null -p /var/run/snmpd.pid -a\"" >> /etc/sysconfig/snmpd
-
 ### Disable core dumps by default
 sudo bash -c "/bin/echo '* soft core 0' >> /etc/security/limits.conf"
 sudo bash -c "/bin/echo '* hard core 0' >> /etc/security/limits.conf"
 
 ### Protect root directory
 sudo /bin/chmod -R go-rwx /root
-
-### Configure Manufacturer variable
-hwtype=$(dmesg | grep "DMI:" | awk '{print $4}')
-
-#### Install Latest Dell OMSA if host is type "Dell"
-if [ "$hwtype" = "Dell" ]; then
-
-/bin/echo 'deb http://linux.dell.com/repo/community/ubuntu precise openmanage' | sudo tee -a /etc/apt/sources.list.d/linux.dell.com.sources.list
-/usr/bin/gpg --keyserver pool.sks-keyservers.net --recv-key 1285491434D8786F
-/usr/bin/gpg -a --export 1285491434D8786F | sudo apt-key add -
-/usr/bin/apt-get update
-/usr/bin/apt-get install -y srvadmin-all
-fi
-
-if [[ $hwtype = *"VMware"* ]]; then
-# Vmware Virtual Machine
-/usr/bin/apt-get install -y open-vm-tools
-fi
 
 ### Add login banner
 sudo bash -c "cat > /etc/issue <<EOF

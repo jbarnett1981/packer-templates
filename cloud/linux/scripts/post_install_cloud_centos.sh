@@ -14,11 +14,6 @@ sudo yum install -y firewalld
 sudo systemctl disable firewalld
 sudo systemctl stop firewalld
 
-# Create DevIT dir
-# sudo mkdir -p /usr/local/devit
-# sudo chmod 775 /usr/local/devit
-# sudo chown it:root /usr/local/devit
-
 # Tell NetworkManager to STEP OFF of resolv.conf, we got dis
 sudo runuser -l root -c 'echo "dns=none" >> /etc/NetworkManager/NetworkManager.conf'
 
@@ -32,15 +27,6 @@ sudo chmod 644 /etc/resolv.conf
 
 # Install git
 sudo yum -y install git
-
-# # Install git repo for devit
-# cd /tmp
-# /usr/bin/git clone https://devit-admin:1xKAWF6mm6@gitlab.tableausoftware.com/devit/linux.git
-# rm linux/imaging/packer*
-# sudo mv linux/imaging/* /usr/local/devit
-# sudo chmod +x /usr/local/devit/*
-# sudo chown it:root /usr/local/devit/*
-# sudo rm -rf linux
 
 # Install required tools
 sudo yum -y install vim net-tools openssh-server nfs-utils samba-client samba-common cifs-utils wget perl zip redhat-lsb-core bind-utils tree
@@ -73,10 +59,6 @@ fi
 sudo yum -y install /tmp/epel.rpm
 
 sudo yum -y install htop screen yum-utils mlocate gcc
-
-# Add devit dir to system path
-# sudo runuser -l root -c 'echo "PATH=$PATH:/usr/local/devit" >> /etc/profile'
-# sudo runuser -l root -c 'echo "export PATH" >> /etc/profile'
 
 sudo yum -y install ntp
 sudo systemctl start ntpd
@@ -251,23 +233,6 @@ sudo runuser -l root -c 'cat >> /etc/ssh/sshd_config <<EOF
 ClientAliveInterval 300
 Banner /etc/issue
 EOF'
-
-### Configure Manufacturer variable
-hwtype=$(dmesg | grep "DMI:" | awk '{print $4}')
-
-#### Install Latest Dell OMSA if host is type "Dell"
-if [ "$hwtype" = "Dell" ]; then
-
-sudo wget -q -O - http://linux.dell.com/repo/hardware/latest/bootstrap.cgi | bash
-sudo yum -y install syscfg srvadmin-all
-fi
-
-#### Install VMware Tools if host is type "VMware"
-
-if [[ $hwtype = *"VMware"* ]]; then
-# Vmware Virtual Machine
-sudo yum -y install open-vm-tools
-fi
 
 #### Install Corp Root CA
 curl -o /tmp/cert.crt http://pki.tableaucorp.com/aia/1NDCITVWPKI11.tsi.lan_CorpIT%20Issuing%20CA.crt

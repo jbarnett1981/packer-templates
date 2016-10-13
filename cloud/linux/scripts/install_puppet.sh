@@ -10,8 +10,11 @@ swver=$(lsb_release -d | awk '{print $2}')
 
 if [ $swver = "CentOS" ]; then
 
+   # CentOS release version
+   releasever=$(lsb_release -r | awk '{print $2}' | cut -c 1)
+
    # Install puppet repo
-   rpm -Uvh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+   rpm -Uvh http://yum.puppetlabs.com/puppetlabs-release-el-$releasever.noarch.rpm
 
    # Install latest puppet agent
    yum install -y puppet
@@ -26,10 +29,13 @@ fi
 
 if [ $swver = "Ubuntu" ]; then
 
+   # Ubuntu release
+   releasename=$(lsb_release -c | awk '{print $2}')
+
    # Install apt repo
    cd /tmp
-   wget https://apt.puppetlabs.com/puppetlabs-release-trusty.deb
-   sudo dpkg -i /tmp/puppetlabs-release-trusty.deb
+   wget https://apt.puppetlabs.com/puppetlabs-release-$releasename.deb
+   sudo dpkg -i /tmp/puppetlabs-release-$releasename.deb
    sudo apt-get update
 
    # Install latest puppet agent
