@@ -3,6 +3,9 @@
 # Update default editor from nano to vi
 sudo update-alternatives --set editor /usr/bin/vim.basic
 
+# Update timezone to PDT
+sudo timedatectl set-timezone America/Los_Angeles
+
 # apt-get update
 sudo /usr/bin/apt-get update
 

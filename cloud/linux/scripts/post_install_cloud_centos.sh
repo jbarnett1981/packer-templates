@@ -43,7 +43,7 @@ sudo yum -y install git
 # sudo rm -rf linux
 
 # Install required tools
-sudo yum -y install net-tools openssh-server nfs-utils samba-client samba-common cifs-utils wget perl zip redhat-lsb-core bind-utils tree
+sudo yum -y install vim net-tools openssh-server nfs-utils samba-client samba-common cifs-utils wget perl zip redhat-lsb-core bind-utils tree
 
 # Disable requiretty in sudoers
 sudo runuser -l root -c 'echo "Defaults:devlocal !requiretty" >> /etc/sudoers'
