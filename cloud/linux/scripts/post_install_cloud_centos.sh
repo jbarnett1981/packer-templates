@@ -234,12 +234,6 @@ ClientAliveInterval 300
 Banner /etc/issue
 EOF'
 
-#### Install Corp Root CA
-curl -o /tmp/cert.crt http://pki.tableaucorp.com/aia/1NDCITVWPKI11.tsi.lan_CorpIT%20Issuing%20CA.crt
-openssl x509 -inform der -in /tmp/cert.crt -out /tmp/tableau_corp_root_ca.pem
-sudo cp /tmp/tableau_corp_root_ca.pem /etc/pki/ca-trust/source/anchors/
-sudo update-ca-trust
-
 # Update system to current
 sudo yum update -y
 
