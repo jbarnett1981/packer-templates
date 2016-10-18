@@ -238,14 +238,7 @@ EOF'
 # Update system to current
 sudo yum update -y
 
-# Update GRUB2 config
-sudo bash -c 'echo "GRUB_TERMINAL=serial" >> /etc/default/grub'
-sudo bash -c 'echo "GRUB_SERIAL_COMMAND=serial --speed=57600 --unit=0 --word=8 --parity=no --stop=1" >> /etc/default/grub'
 ### System cleanup
-
-# Remove external repos, as we're managing this internally
-# rm -f /etc/yum.repos.d/CentOS-*
-#sudo rm -f /root/anaconda-ks.cfg
 sudo rm -rf /tmp/*
 
 # Remove Red Hat Network bits from CentOS...
