@@ -20,6 +20,10 @@
     "destination": "/tmp/tests"
    },
    {
+    "type": "shell",
+    "script": "scripts/serverspec.sh"
+   },
+   {
     "type": "file",
     "source": "scripts/domain_join_kerb_cloud.sh",
     "destination": "/home/devlocal/domain_join.sh"
