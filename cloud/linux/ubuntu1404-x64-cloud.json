@@ -32,6 +32,10 @@
     "type": "file",
     "source": "scripts/install_puppet.sh",
     "destination": "/home/devlocal/install_puppet.sh"
+   },
+   {
+    "type": "shell",
+    "inline": ["sudo rm -rf /tmp/*"]
    }
  ]
 }
