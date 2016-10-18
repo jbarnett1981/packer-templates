@@ -15,11 +15,12 @@ sudo systemctl disable firewalld
 sudo systemctl stop firewalld
 
 # Tell NetworkManager to STEP OFF of resolv.conf, we got dis
-sudo runuser -l root -c 'echo "dns=none" >> /etc/NetworkManager/NetworkManager.conf'
+# sudo bash -c 'echo "dns=none" >> /etc/NetworkManager/NetworkManager.conf'
+sudo sed -i 's/^PEERDNS.*/PEERDNS="no"/' /etc/sysconfig/network-scripts/ifcfg-eth0
 
 # Configure resolv.conf
-sudo runuser -l root -c 'cat > /etc/resolv.conf <<EOF
-search tsi.lan dev.tsi.lan
+sudo bash -c 'cat > /etc/resolv.conf <<EOF
+search tsi.lan dev.tsi.lan tableaucorp.com db.tsi.lan test.tsi.lan
 nameserver 10.26.160.31
 nameserver 10.26.160.32
 EOF'
@@ -32,10 +33,10 @@ sudo yum -y install git
 sudo yum -y install vim net-tools openssh-server nfs-utils samba-client samba-common cifs-utils wget perl zip redhat-lsb-core bind-utils tree
 
 # Disable requiretty in sudoers
-sudo runuser -l root -c 'echo "Defaults:devlocal !requiretty" >> /etc/sudoers'
+sudo bash -c 'echo "Defaults:devlocal !requiretty" >> /etc/sudoers'
 
 # Add Tableau DevIT sudoers file
-sudo runuser -l root -c 'cat > /etc/sudoers.d/tableau-devit <<EOF
+sudo bash -c 'cat > /etc/sudoers.d/tableau-devit <<EOF
 # Tableau DevIT Managed
 # Allow zabbix user to restart puppet agent
 zabbix ALL=NOPASSWD: /etc/init.d/puppet restart
@@ -65,8 +66,8 @@ sudo systemctl start ntpd
 sudo systemctl enable ntpd
 
 ### Yum setup and update'
-sudo runuser -l root -c 'echo "metadata_expire=1800" >> /etc/yum.conf'
-sudo runuser -l root -c 'echo "installonlypkgs=kernel kernel*" >> /etc/yum.conf'
+sudo bash -c 'echo "metadata_expire=1800" >> /etc/yum.conf'
+sudo bash -c 'echo "installonlypkgs=kernel kernel*" >> /etc/yum.conf'
 #rpm --import /etc/pki/rpm-gpg/*
 
 ### base build is complete ###
@@ -81,7 +82,7 @@ sudo sed -i 's/^DS$/DSsmarthost.tsi.lan/' /etc/mail/sendmail.cf
 ### Configure etc/snmpd
 sudo yum -y install net-snmp
 sudo cp /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.orig
-sudo runuser -l root -c 'cat > /etc/snmp/snmpd.conf <<EOF
+sudo bash -c 'cat > /etc/snmp/snmpd.conf <<EOF
 com2sec local     localhost       public
 com2sec mynetwork 10.0.0.0/8      public
 group MyRWGroup v1         local
@@ -101,11 +102,11 @@ load 8 8 8
 EOF'
 
 ### Configure sysconfig/snmpd
-sudo runuser -l root -c 'echo "OPTIONS=\"-LS0-5d -Lf /dev/null -p /var/run/snmpd.pid -a\"" >> /etc/sysconfig/snmpd'
+sudo bash -c 'echo "OPTIONS=\"-LS0-5d -Lf /dev/null -p /var/run/snmpd.pid -a\"" >> /etc/sysconfig/snmpd'
 
 ### Disable core dumps by default
-sudo runuser -l root -c 'echo "* soft core 0" >> /etc/security/limits.conf'
-sudo runuser -l root -c 'echo "* hard core 0" >> /etc/security/limits.conf'
+sudo bash -c 'echo "* soft core 0" >> /etc/security/limits.conf'
+sudo bash -c 'echo "* hard core 0" >> /etc/security/limits.conf'
 
 ### Disable Ctl-alt-del reboot
 sudo systemctl mask ctrl-alt-del.target
@@ -118,7 +119,7 @@ sudo grubby --update-kernel=ALL --args="elevator=noop"
 
 
 ### Add login banner
-sudo runuser -l root -c 'cat > /etc/issue <<EOF
+sudo bash -c 'cat > /etc/issue <<EOF
 *** WARNING ***
 
 THIS IS A PRIVATE COMPUTER SYSTEM. It is for authorized use only.
@@ -136,21 +137,21 @@ sudo cp -f /etc/issue /etc/issue.net
 sudo chmod -R go-rwx /root
 
 ### Configure auth.* syslog channel
-sudo runuser -l root -c 'echo "auth.* /var/log/secure" >> /etc/syslog.conf'
+sudo bash -c 'echo "auth.* /var/log/secure" >> /etc/syslog.conf'
 
 # Turn on reverse path filtering.
-sudo runuser -l root -c 'echo "net.ipv4.conf.all.rp_filter = 1" >> /etc/sysctl.conf'
+sudo bash -c 'echo "net.ipv4.conf.all.rp_filter = 1" >> /etc/sysctl.conf'
 # Don't allow outsiders to alter the routing tables.
-sudo runuser -l root -c 'echo "net.ipv4.conf.all.accept_redirects = 0" >> /etc/sysctl.conf'
-sudo runuser -l root -c 'echo "net.ipv4.conf.all.secure_redirects = 0" >> /etc/sysctl.conf'
+sudo bash -c 'echo "net.ipv4.conf.all.accept_redirects = 0" >> /etc/sysctl.conf'
+sudo bash -c 'echo "net.ipv4.conf.all.secure_redirects = 0" >> /etc/sysctl.conf'
 # Don't reply to broadcasts.  Prevents joining a smurf attack.
-sudo runuser -l root -c 'echo "net.ipv4.icmp_echo_ignore_broadcasts = 1" >> /etc/sysctl.conf'
+sudo bash -c 'echo "net.ipv4.icmp_echo_ignore_broadcasts = 1" >> /etc/sysctl.conf'
 # Bump up TCP socket queue to help with syn floods.
-sudo runuser -l root -c 'echo "net.ipv4.tcp_max_syn_backlog = 4096" >> /etc/sysctl.conf'
+sudo bash -c 'echo "net.ipv4.tcp_max_syn_backlog = 4096" >> /etc/sysctl.conf'
 
 ### Configure auditd
-sudo runuser -l root -c 'cp /etc/audit/auditd.conf /etc/audit/auditd.conf.orig'
-sudo runuser -l root -c 'cat > /etc/audit/auditd.conf <<EOF
+sudo bash -c 'cp /etc/audit/auditd.conf /etc/audit/auditd.conf.orig'
+sudo bash -c 'cat > /etc/audit/auditd.conf <<EOF
 # This file controls the configuration of the audit daemon
 log_file = /var/log/audit/audit.log
 log_format = RAW
@@ -177,8 +178,8 @@ tcp_client_max_idle = 0
 enable_krb5 = no
 krb5_principal = auditd
 EOF'
-sudo runuser -l root -c 'cp /etc/audit/audit.rules /etc/audit/audit.rules.orig'
-sudo runuser -l root -c 'cat > /etc/audit/audit.rules <<EOF
+sudo bash -c 'cp /etc/audit/audit.rules /etc/audit/audit.rules.orig'
+sudo bash -c 'cat > /etc/audit/audit.rules <<EOF
 # This file contains the auditctl rules that are loaded
 # whenever the audit daemon is started via the initscripts.
 # The rules are simply the parameters that would be passed
@@ -223,13 +224,13 @@ sudo runuser -l root -c 'cat > /etc/audit/audit.rules <<EOF
 EOF'
 
 ### Configure cron usage
-sudo runuser -l root -c 'echo "root" > /etc/cron.allow'
-sudo runuser -l root -c 'echo "ALL" > /etc/cron.deny'
+sudo bash -c 'echo "root" > /etc/cron.allow'
+sudo bash -c 'echo "ALL" > /etc/cron.deny'
 sudo chmod 644 /etc/cron.allow /etc/cron.deny
 sudo chmod 0400 /etc/crontab
 
 #### Configure sshd
-sudo runuser -l root -c 'cat >> /etc/ssh/sshd_config <<EOF
+sudo bash -c 'cat >> /etc/ssh/sshd_config <<EOF
 ClientAliveInterval 300
 Banner /etc/issue
 EOF'
@@ -238,8 +239,8 @@ EOF'
 sudo yum update -y
 
 # Update GRUB2 config
-sudo runuser -l root -c 'echo "GRUB_TERMINAL=serial" >> /etc/default/grub'
-sudo runuser -l root -c 'echo "GRUB_SERIAL_COMMAND=serial --speed=57600 --unit=0 --word=8 --parity=no --stop=1" >> /etc/default/grub'
+sudo bash -c 'echo "GRUB_TERMINAL=serial" >> /etc/default/grub'
+sudo bash -c 'echo "GRUB_SERIAL_COMMAND=serial --speed=57600 --unit=0 --word=8 --parity=no --stop=1" >> /etc/default/grub'
 ### System cleanup
 
 # Remove external repos, as we're managing this internally

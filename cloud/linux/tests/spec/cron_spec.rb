@@ -1,16 +1,29 @@
 require 'spec_helper'
 
-describe package('cronie') do
-  it { should be_installed }
-end
+if os[:family] == 'redhat'
 
-describe package('crontabs') do
-  it { should be_installed }
-end
+   describe package('cronie') do
+     it { should be_installed }
+   end
 
-describe service('crond') do
-  it { should be_enabled }
-  it { should be_running }
+   describe package('crontabs') do
+     it { should be_installed }
+   end
+
+   describe service('crond') do
+     it { should be_enabled }
+     it { should be_running }
+   end
+elsif ['debian', 'ubuntu'].include?(os[:family])
+
+   describe package('cron') do
+     it { should be_installed }
+   end
+
+   describe service('cron') do
+     it { should be_enabled }
+     it { should be_running }
+   end
 end
 
 describe file('/etc/cron.allow') do

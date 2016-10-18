@@ -19,7 +19,7 @@ EOF"
 sudo /sbin/resolvconf -u
 
 # Install required tools
-sudo /usr/bin/apt-get install -y openssh-server build-essential nfs-common git smbclient cifs-utils wget sysv-rc-conf vim
+sudo /usr/bin/apt-get install -y openssh-server build-essential ntp nfs-common git smbclient cifs-utils wget sysv-rc-conf vim zip tree
 
 # Add Tableau DevIT sudoers file
 sudo bash -c "cat > /etc/sudoers.d/tableau-devit <<EOF
@@ -65,6 +65,18 @@ EOF"
 ### Disable core dumps by default
 sudo bash -c "/bin/echo '* soft core 0' >> /etc/security/limits.conf"
 sudo bash -c "/bin/echo '* hard core 0' >> /etc/security/limits.conf"
+
+### Configure cron usage
+sudo bash -c 'echo "root" > /etc/cron.allow'
+sudo bash -c 'echo "ALL" > /etc/cron.deny'
+sudo chmod 644 /etc/cron.allow /etc/cron.deny
+sudo chmod 0400 /etc/crontab
+
+#### Configure sshd
+sudo bash -c 'cat >> /etc/ssh/sshd_config <<EOF
+ClientAliveInterval 300
+Banner /etc/issue
+EOF'
 
 ### Protect root directory
 sudo /bin/chmod -R go-rwx /root
