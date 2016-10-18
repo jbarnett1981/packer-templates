@@ -16,7 +16,7 @@
    },
    {
     "type": "file",
-    "source": "tests-centos",
+    "source": "tests",
     "destination": "/tmp/tests"
    },
    {

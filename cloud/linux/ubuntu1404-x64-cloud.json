@@ -16,7 +16,7 @@
    },
    {
     "type": "file",
-    "source": "tests-ubuntu",
+    "source": "tests",
     "destination": "/tmp/tests"
    },
    {
