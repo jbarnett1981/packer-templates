@@ -6,12 +6,19 @@ end
 
 if os[:family] == 'redhat'
 
-describe command("timedatectl status | grep -i zone | awk '{print $3}'") do
-  its(:stdout) { should match 'America/Los_Angeles' }
+   describe command("timedatectl status | grep -i zone | awk '{print $3}'") do
+     its(:stdout) { should match 'America/Los_Angeles' }
+   end
 end
 
-elsif ['debian', 'ubuntu'].include?(os[:family])
-   describe command("timedatectl status | grep -i zone | awk '{print $2}'") do
-      its(:stdout) { should match 'America/Los_Angeles' }
+if ['debian', 'ubuntu'].include?(os[:family])
+   if os[:release] == '16.04'
+      describe command("timedatectl status | grep -i zone | awk '{print $3}'") do
+         its(:stdout) { should match 'America/Los_Angeles' }
+      end
+   else
+      describe command("timedatectl status | grep -i zone | awk '{print $2}'") do
+         its(:stdout) { should match 'America/Los_Angeles' }
+      end
    end
 end

@@ -6,16 +6,12 @@ if os[:family] == 'redhat'
      it { should be_installed }
    end
 
-describe file('/etc/yum.conf') do
-  its(:content) { should match /metadata_expire=1800/ }
-  its(:content) { should match /installonlypkgs=kernel kernel\*/ }
-end
+   describe file('/etc/yum.conf') do
+     its(:content) { should match /metadata_expire=1800/ }
+     its(:content) { should match /installonlypkgs=kernel kernel\*/ }
+   end
 
 elsif ['debian', 'ubuntu'].include?(os[:family])
-
-   describe file('/etc/apt/sources.list') do
-      its(:md5sum) { should eq 'efc26bed90fce13e57440a76640baa1b' }
-   end
 
    describe ppa('brightbox/ruby-ng') do
       it { should exist }

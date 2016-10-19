@@ -14,9 +14,9 @@ elsif ['debian', 'ubuntu'].include?(os[:family])
    describe package('libpam-modules-bin') do
      it { should be_installed }
    end
-   describe package('libpam-cap') do
-     it { should be_installed }
-   end
+   # describe package('libpam-cap') do
+   #   it { should be_installed }
+   # end
    describe package('libpam-systemd') do
      it { should be_installed }
    end
