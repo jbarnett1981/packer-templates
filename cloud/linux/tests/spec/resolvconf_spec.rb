@@ -3,7 +3,7 @@ require 'spec_helper'
 if os[:family] == 'redhat'
 
    describe file('/etc/sysconfig/network-scripts/ifcfg-eth0') do
-      its(:content) { should match /PEERNDS="no"/ }
+      its(:content) { should match /PEERDNS="no"/ }
    end
 end
 
