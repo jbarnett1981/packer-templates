@@ -15,9 +15,42 @@ if [ ${#HOST} -gt 15 ]; then
    exit 1
 fi
 
+cat > /etc/krb5.conf <<EOF
+[logging]
+ default = FILE:/var/log/krb5libs.log
+ kdc = FILE:/var/log/krb5kdc.log
+ admin_server = FILE:/var/log/kadmind.log
+
+[libdefaults]
+ dns_lookup_realm = true
+ ticket_lifetime = 24h
+ renew_lifetime = 7d
+ forwardable = true
+ rdns = false
+ default_realm = TSI.LAN
+EOF
+
+swver=$(lsb_release -d | awk '{print $2}')
+
+if [ $swver = "CentOS" ]; then
+
 /usr/bin/yum -y install realmd sssd oddjob oddjob-mkhomedir adcli samba-common ntpdate ntp krb5-workstation sssd-tools redhat-lsb-core
 
 /usr/sbin/authconfig --enablesssd --enablesssdauth --enablemkhomedir --update
+fi
+
+if [ $swver = "Ubuntu" ]; then
+export DEBIAN_FRONTEND=noninteractive
+sudo apt-get install -y krb5-user samba sssd ntp sssd-tools oddjob oddjob-mkhomedir
+sudo bash -c 'cat >> /etc/pam.d/common-session <<EOF
+session    required    pam_mkhomedir.so skel=/etc/skel/ umask=0022
+EOF'
+fi
+
+# if [ $swver = "Ubuntu" ]; then
+# export DEBIAN_FRONTEND=noninteractive
+# sudo apt-get install -y sssd libpam-sss libnss-sss sssd-tools krb5-user oddjob oddjob-mkhomedir adcli samba-common
+# fi
 
 NIC=$(ip route ls | grep default | awk '{print $5}')
 
@@ -63,21 +96,6 @@ EOF
 chown root:root /etc/sssd/sssd.conf
 chmod 600 /etc/sssd/sssd.conf
 
-cat > /etc/krb5.conf <<EOF
-[logging]
- default = FILE:/var/log/krb5libs.log
- kdc = FILE:/var/log/krb5kdc.log
- admin_server = FILE:/var/log/kadmind.log
-
-[libdefaults]
- dns_lookup_realm = true
- ticket_lifetime = 24h
- renew_lifetime = 7d
- forwardable = true
- rdns = false
- default_realm = TSI.LAN
-EOF
-
 sed -i 's/.*KerberosAuthentication.*/KerberosAuthentication yes/' /etc/ssh/sshd_config
 sed -i 's/.*KerberosOrLocalPasswd.*/KerberosOrLocalPasswd yes/' /etc/ssh/sshd_config
 sed -i 's/.*KerberosTicketCleanup.*/KerberosTicketCleanup yes/' /etc/ssh/sshd_config
@@ -100,16 +118,31 @@ SHORTNAME=$(echo $HOSTNAME | cut -d'.' -f1)
 OSVER=$(lsb_release -r | awk '{print $2}')
 OSNAME=$(lsb_release -i | awk '{print $3}')
 
+if [ $swver = "CentOS" ]; then
 sed -i "s/^127.0.0.1.*/127.0.0.1   $HOSTNAME $SHORTNAME localhost localhost.localdomain localhost4 localhost4.localdomain4/" /etc/hosts
 sed -i "s/^::1.*/::1   $HOSTNAME $SHORTNAME localhost localhost.localdomain localhost6 localhost6.localdomain6/" /etc/hosts
+fi
+
+if [ $swver = "Ubuntu" ]; then
+sed -i "s/^127.0.0.1.*/127.0.0.1   $HOSTNAME $SHORTNAME localhost/" /etc/hosts
+sed -i "s/^::1.*/::1   $HOSTNAME $SHORTNAME ip6-localhost ip6-loopback/" /etc/hosts
+fi
 
 printf "Enter TSI Username: " && read NAME
 kinit $NAME@TSI.LAN
 net ads -k join createcomputer="TSI_DevIT/Build" osName=$OSNAME osVer=$OSVER
 
 systemctl enable sssd.service
-systemctl enable sshd.service
 systemctl enable oddjobd.service
 systemctl restart sssd.service
-systemctl restart sshd.service
 systemctl restart oddjobd.service
+if [ "$swver" = "CentOS" ]; then
+   systemctl enable sshd.service
+   systemctl restart sshd.service
+elif [ "$swver" = "Ubuntu" ]; then
+   systemctl enable ssh.service
+   systemctl restart ssh.service
+else
+   #nothing
+   echo "Unsupported system"
+fi

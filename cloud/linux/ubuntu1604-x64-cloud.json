@@ -1,0 +1,41 @@
+{
+  "builders": [{
+        "type": "openstack",
+        "ssh_pty" : true,
+        "ssh_username": "devlocal",
+        "ssh_keypair_name": "cloud-key",
+        "ssh_private_key_file": "cloud-key.pem",
+        "image_name": "IMAGE_NAME",
+        "source_image": "4a1cdd48-6aa9-482d-8cdf-8805b717be55",
+        "flavor": "GEN.cpu04.ram04G.hd0G"
+  }],
+  "provisioners": [
+   {
+    "type": "shell",
+    "script": "scripts/post_install_cloud_ubuntu.sh"
+   },
+   {
+    "type": "file",
+    "source": "tests",
+    "destination": "/tmp/tests"
+   },
+   {
+    "type": "shell",
+    "script": "scripts/serverspec.sh"
+   },
+   {
+    "type": "file",
+    "source": "scripts/domain_join_kerb_cloud.sh",
+    "destination": "/home/devlocal/domain_join.sh"
+   },
+   {
+    "type": "file",
+    "source": "scripts/install_puppet.sh",
+    "destination": "/home/devlocal/install_puppet.sh"
+   },
+   {
+    "type": "shell",
+    "inline": ["sudo rm -rf /tmp/*"]
+   }
+ ]
+}

@@ -6,12 +6,12 @@ if [ $# -lt "$MINPARAMS" ]
 then
   echo
   echo "This script needs at least $MINPARAMS command-line arguments!"
-  echo "Ex: bash `basename $0` centos7|ubuntu1404"
+  echo "Ex: bash `basename $0` centos7|ubuntu1404|ubuntu1604"
   exit 1
 fi
 
-if ! [[ "$1" =~ ^(centos7|ubuntu1404)$ ]]; then
-  echo "Unsupported argument. Use 'centos7 or 'ubuntu1404'."
+if ! [[ "$1" =~ ^(centos7|ubuntu1404|ubuntu1604)$ ]]; then
+  echo "Unsupported argument. Use 'centos7 or 'ubuntu1404' or 'ubuntu1604'."
   exit 1
 fi
 
