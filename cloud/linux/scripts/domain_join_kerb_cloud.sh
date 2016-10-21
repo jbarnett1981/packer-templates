@@ -40,8 +40,7 @@ if [ $swver = "CentOS" ]; then
 fi
 
 if [ $swver = "Ubuntu" ]; then
-export DEBIAN_FRONTEND=noninteractive
-sudo apt-get install -y krb5-user samba sssd ntp sssd-tools oddjob oddjob-mkhomedir
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq krb5-user samba sssd ntp sssd-tools oddjob oddjob-mkhomedir
 sudo bash -c 'cat >> /etc/pam.d/common-session <<EOF
 session    required    pam_mkhomedir.so skel=/etc/skel/ umask=0022
 EOF'

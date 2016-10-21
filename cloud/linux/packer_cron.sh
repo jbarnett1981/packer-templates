@@ -19,9 +19,16 @@ fi
 cd /usr/local/devit/packer/cloud/linux/
 . openrc
 
+# Get latest data from repo
+git pull
+
+# Destroy known_hosts so packer can ssh using recycled openstack IP
+rm -f /root/.ssh/known_hosts
+
 # Create packer log env vars
+DATE=`date +%Y%m%d`
 PACKER_LOG=1
-PACKER_LOG_PATH=centos7-x64-$QDATE.log
+PACKER_LOG_PATH=centos7-x64-$QDATE-$DATE.log
 
 # Generate quarter and year string and full image name
 QDATE=$(date +%Y)q$(( ($(date +%-m)-1)/3+1 ))
