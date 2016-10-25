@@ -51,7 +51,25 @@ fi
 # sudo apt-get install -y sssd libpam-sss libnss-sss sssd-tools krb5-user oddjob oddjob-mkhomedir adcli samba-common
 # fi
 
+# London is 10.242.0.0/18. Therefore first 3 octets should be between 10.242.0 - 10.242.63 inclusive. If not, host is not in London
+
+# get default NIC
 NIC=$(ip route ls | grep default | awk '{print $5}')
+
+# get default NIC IP
+IP=$(ip addr show dev $NIC | grep -Po 'inet \K[\d.]+')
+
+# get 2nd octet
+BASE2=$(echo $IP | cut -d"." -f2)
+
+# get 3rd octet
+BASE3=$(echo $IP | cut -d"." -f3)
+
+if [ "$BASE2" -eq 242 ] && [ "$BASE3" -ge 0 -a "$BASE3" -le 63 ]; then
+   ADSITE="TSI-EMEADataCenter"
+else
+   ADSITE="TSI-NADataCenter"
+fi
 
 cat > /etc/samba/smb.conf <<EOF
 [global]
@@ -82,7 +100,7 @@ use_fully_qualified_names = False
 fallback_homedir = /home/tsi/%u
 auth_provider = ad
 access_provider = ad
-ad_site = TSI-NADataCenter
+ad_site = $ADSITE
 #ad_access_filter = FOREST:TSI.LAN:(memberOf=cn=DevIT Infrastructure,ou=DevIT_delegated,ou=User Groups,ou=High Sec Groups,ou=TSI Groups,dc=tsi,dc=lan)
 ad_gpo_access_control = permissive
 ad_gpo_map_remote_interactive = +sshd
@@ -129,7 +147,7 @@ fi
 
 printf "Enter TSI Username: " && read NAME
 kinit $NAME@TSI.LAN
-net ads -k join createcomputer="TSI_DevIT/Build" osName=$OSNAME osVer=$OSVER
+net ads -k join createcomputer="TSI Computers/Workstations/Dev Workstations" osName=$OSNAME osVer=$OSVER
 
 systemctl enable sssd.service
 systemctl enable oddjobd.service
