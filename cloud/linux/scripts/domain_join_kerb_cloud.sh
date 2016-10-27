@@ -93,6 +93,9 @@ ad_domain = tsi.lan
 krb5_realm = TSI.LAN
 cache_credentials = True
 id_provider = ad
+subdomain_inherit = ignore_group_members, ldap_purge_cache_timeout
+ignore_group_members = True
+ldap_purge_cache_timeout = 0
 krb5_store_password_if_offline = True
 default_shell = /bin/bash
 ldap_id_mapping = True
@@ -132,8 +135,8 @@ if [[ ${HOSTNAME} != *"tsi.lan"* ]]; then
 fi
 
 SHORTNAME=$(echo $HOSTNAME | cut -d'.' -f1)
-OSVER=$(lsb_release -r | awk '{print $2}')
-OSNAME=$(lsb_release -i | awk '{print $3}')
+# OSVER=$(lsb_release -r | awk '{print $2}')
+# OSNAME=$(lsb_release -i | awk '{print $3}')
 
 if [ $swver = "CentOS" ]; then
 sed -i "s/^127.0.0.1.*/127.0.0.1   $HOSTNAME $SHORTNAME localhost localhost.localdomain localhost4 localhost4.localdomain4/" /etc/hosts
@@ -147,7 +150,7 @@ fi
 
 printf "Enter TSI Username: " && read NAME
 kinit $NAME@TSI.LAN
-net ads -k join createcomputer="TSI Computers/Workstations/Dev Workstations" osName=$OSNAME osVer=$OSVER
+net ads -k join createcomputer="TSI Computers/Workstations/Dev Workstations"
 
 systemctl enable sssd.service
 systemctl enable oddjobd.service
