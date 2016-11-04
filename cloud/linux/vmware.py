@@ -60,7 +60,7 @@ def vmware_create(flavor):
     password = data['creds']['vmware']['password']
     datastore = data['creds']['vmware']['datastore']
     packer_template = '/'.join([os.getcwd(), '%s-x64-vmware.json' % flavor])
-    image_path_base = 'packer_images/%s-vmware-%s/devit-%s-vmware-%s.vmx' % (flavor, date_suffix, flavor, date_suffix)
+    image_path_base = 'packer_images/%s-vmware-%s/%s-vmware-%s.vmx' % (flavor, date_suffix, flavor, date_suffix)
 
     #hacky workaround to ssl cert warnings in Python 2.7.9+
     #http://www.errr-online.com/index.php/tag/pyvmomi/
@@ -119,7 +119,7 @@ def vmware_create(flavor):
     time.sleep(30)
 
     # Clean up orphaned VM from packer build since they don't do it. BUG submitted https://github.com/mitchellh/packer/issues/2841
-    orphan_uuid = get_uuid(orphan_folder, "devit-%s-vmware-%s" % (flavor, date_suffix), "orphaned")
+    orphan_uuid = get_uuid(orphan_folder, "%s-vmware-%s" % (flavor, date_suffix), "orphaned")
     if orphan_uuid is not None:
         vm = content.searchIndex.FindByUuid(None, orphan_uuid, True, True)
         logger.info("Deleting orphan vm: %s" % vm.summary.config.name)

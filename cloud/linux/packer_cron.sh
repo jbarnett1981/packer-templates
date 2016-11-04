@@ -27,9 +27,6 @@ cd /usr/local/devit/packer/cloud/linux/
 # Get latest data from repo
 git pull
 
-# Destroy known_hosts so packer can ssh using recycled openstack IP
-rm -f /root/.ssh/known_hosts
-
 # Create packer log env vars
 DATE=`date +%Y-%m-%d`
 PACKER_LOG=1
