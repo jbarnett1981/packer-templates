@@ -32,6 +32,8 @@ sudo timedatectl set-timezone America/Los_Angeles
 
 # apt-get update
 sudo /usr/bin/apt-get update
+sudo /usr/bin/apt-get upgrade
+sudo /usr/bin/apt-get autoremove
 
 # Configure resolv.conf
 sudo bash -c "/bin/cat > /etc/resolvconf/resolv.conf.d/base <<EOF
