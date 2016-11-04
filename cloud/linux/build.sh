@@ -23,7 +23,7 @@ fi
 # Change to working dir
 cd /usr/local/devit/packer/cloud/linux/
 
-# Remove old templates with dates in the name
+# Remove old templates & logs
 find . -type f -name '*2[0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]*' | xargs rm -f
 
 # Create packer log env vars
