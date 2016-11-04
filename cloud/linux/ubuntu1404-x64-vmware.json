@@ -68,7 +68,7 @@
    {
     "type": "file",
     "source": "scripts/lvm_extend.sh",
-    "destination": "/usr/local/share/EXPAND_ROOT"
+    "destination": "/home/devlocal/EXPAND_ROOT"
    },
    {
     "type": "shell",

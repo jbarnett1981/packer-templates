@@ -12,7 +12,7 @@ sudo /usr/sbin/useradd -m -d /home/it -s /bin/bash -p '$1$6982c48E$5Ap/qdWzYDGG.
 sudo /usr/bin/apt-get install -y open-vm-tools
 
 sudo sed -i '/exit 0/d' /etc/rc.local
-sudo bash -c '/bin/echo "if [ -f /usr/local/share/EXPAND_ROOT ]; then bash /usr/local/share/EXPAND_ROOT && rm /usr/local/share/EXPAND_ROOT && reboot; fi" >> /etc/rc.local'
+sudo bash -c '/bin/echo "if [ -f /home/devlocal/EXPAND_ROOT ]; then sudo bash /home/devlocal/EXPAND_ROOT && rm /home/devlocal/EXPAND_ROOT && sudo reboot; fi" >> /etc/rc.local'
 
 fi
 
