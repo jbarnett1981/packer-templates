@@ -70,6 +70,10 @@
     "script": "scripts/post_install_cloud_ubuntu.sh"
    },
    {
+    "type": "shell",
+    "script": "scripts/lvm_extend.sh"
+   },
+   {
     "type": "file",
     "source": "tests",
     "destination": "/tmp"

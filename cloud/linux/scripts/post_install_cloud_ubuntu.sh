@@ -11,20 +11,8 @@ sudo /usr/sbin/useradd -m -d /home/it -s /bin/bash -p '$1$6982c48E$5Ap/qdWzYDGG.
 # Vmware Virtual Machine
 sudo /usr/bin/apt-get install -y open-vm-tools
 
-# Configure rc.local disk resizing on first boot
-sudo cat > /home/it/EXPAND_ROOT <<"EOF"
-disk="sda"
-startsector=$(fdisk -u -l /dev/$disk | grep ${disk}2 | awk '{print $2}')
-parted /dev/$disk --script rm 2
-parted /dev/$disk --script "mkpart primary ext4 ${startsector}s -1s"
-parted /dev/$disk --script set 2 lvm on
-pvresize /dev/${disk}2
-lvextend --extents +100%FREE /dev/mapper/vg00-lv_root --resizefs
-EOF
-sudo chmod +x /home/it/EXPAND_ROOT
-
 sudo sed -i '/exit 0/d' /etc/rc.local
-sudo bash -c '/bin/echo "if [ -f /home/it/EXPAND_ROOT ]; then bash /home/it/EXPAND_ROOT && rm /home/it/EXPAND_ROOT && reboot; fi" >> /etc/rc.local'
+sudo bash -c '/bin/echo "if [ -f /usr/local/share/EXPAND_ROOT ]; then bash /usr/local/share/EXPAND_ROOT && rm /usr/local/share/EXPAND_ROOT && reboot; fi" >> /etc/rc.local'
 
 fi
 
