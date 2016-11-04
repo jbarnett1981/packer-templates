@@ -66,12 +66,13 @@
 
   "provisioners": [
    {
-    "type": "shell",
-    "script": "scripts/post_install_cloud_ubuntu.sh"
+    "type": "file",
+    "source": "scripts/lvm_extend.sh",
+    "destination": "/usr/local/share/EXPAND_ROOT"
    },
    {
     "type": "shell",
-    "script": "scripts/lvm_extend.sh"
+    "script": "scripts/post_install_cloud_ubuntu.sh"
    },
    {
     "type": "file",
