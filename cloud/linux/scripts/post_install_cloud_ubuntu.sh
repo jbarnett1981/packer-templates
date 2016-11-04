@@ -12,15 +12,15 @@ sudo /usr/sbin/useradd -m -d /home/it -s /bin/bash -p '$1$6982c48E$5Ap/qdWzYDGG.
 sudo /usr/bin/apt-get install -y open-vm-tools
 
 # Configure rc.local disk resizing on first boot
-sudo bash -c 'cat > /home/it/EXPAND_ROOT <<EOF
+sudo cat > /home/it/EXPAND_ROOT <<"EOF"
 disk="sda"
-startsector=\$(fdisk -u -l /dev/\$disk | grep \${disk}2 | awk "{print \$2}")
-parted /dev/\$disk --script rm 2
-parted /dev/\$disk --script "mkpart primary ext4 \${startsector}s -1s"
-parted /dev/\$disk --script set 2 lvm on
-pvresize /dev/\${disk}2
+startsector=$(fdisk -u -l /dev/$disk | grep ${disk}2 | awk '{print $2}')
+parted /dev/$disk --script rm 2
+parted /dev/$disk --script "mkpart primary ext4 ${startsector}s -1s"
+parted /dev/$disk --script set 2 lvm on
+pvresize /dev/${disk}2
 lvextend --extents +100%FREE /dev/mapper/vg00-lv_root --resizefs
-EOF'
+EOF
 sudo chmod +x /home/it/EXPAND_ROOT
 
 sudo sed -i '/exit 0/d' /etc/rc.local
