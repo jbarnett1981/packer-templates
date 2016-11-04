@@ -24,8 +24,8 @@ fi
 cd /usr/local/devit/packer/cloud/linux/
 . openrc
 
-# Get latest data from repo
-git pull
+# Remove old templates with dates in the name
+find . -type f -name '*2[0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]*' | xargs rm -f
 
 # Create packer log env vars
 DATE=`date +%Y-%m-%d`
@@ -38,10 +38,11 @@ IMAGE_NAME="$1-$2-$DATE"
 # Replace packer template with current quarter and year image name template
 sed "s/IMAGE_NAME/$IMAGE_NAME/g" "$1"-x64-"$2".json > "$1"-x64-"$2"-$DATE.json
 
-# Run packer build
-/usr/local/bin/packer build --var-file vmware/packer-vmware-info.json "$1"-x64-"$2"-$DATE.json
-
 # If VMWare, run vmware.py to cleanup stale orphan and create template
 if [ $2 = "vmware" ]; then
+   # Run packer build
+   /usr/local/bin/packer build --var-file vmware/packer-vmware-info.json "$1"-x64-"$2"-$DATE.json
    python vmware.py $1
+else
+   /usr/local/bin/packer build "$1"-x64-"$2"-$DATE.json
 fi
