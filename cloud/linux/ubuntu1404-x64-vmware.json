@@ -13,7 +13,7 @@
       "output_directory": "/packer_images/IMAGE_NAME",
       "boot_command": [
         "<esc><esc><enter><wait>",
-        "/install/vmlinuz ",
+        "/install/vmlinuz noapic ",
         "preseed/url=http://{{.HTTPIP}}:{{.HTTPPort}}/ubuntu1404-vmware.cfg ",
         "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
         "hostname={{.Name}} ",
@@ -33,6 +33,7 @@
       "remote_datastore": "{{user `packer_remote_datastore`}}",
       "remote_username": "{{user `packer_remote_username`}}",
       "remote_password": "{{user `packer_remote_password`}}",
+      "remote_cache_datastore": "{{user `packer_remote_cache_datastore`}}",
       "remote_cache_directory": "{{user `packer_remote_cache_directory`}}",
       "remote_type": "esx5",
       "vnc_disable_password": "True",
@@ -64,10 +65,6 @@
     }],
 
   "provisioners": [
-   {
-      "type": "shell",
-      "inline": ["sed -i '/exit 0/d' /etc/rc.local; echo 'if [ -f /root/EXPAND_ROOT ]; then bash /root/EXPAND_ROOT && rm /root/EXPAND_ROOT && reboot; fi' >> /etc/rc.local"]
-   },
    {
     "type": "shell",
     "script": "scripts/post_install_cloud_ubuntu.sh"

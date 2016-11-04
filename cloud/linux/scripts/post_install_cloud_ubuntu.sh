@@ -5,23 +5,27 @@ hwtype=$(dmesg | grep "DMI:" | awk '{print $4}')
 
 #### Install VMware Tools if host is type "VMware"
 if [[ $hwtype = *"VMware"* ]]; then
-# Add it and devlocal user and set passwd
-/usr/sbin/useradd -m -d /home/it -s /bin/bash -p '$1$6982c48E$5Ap/qdWzYDGG.8fqsNSpz0' it
-/usr/sbin/useradd -m -d /home/devlocal -s /bin/bash -p '$1$bsVx7TxS$VuBulM.4dhVRAbD2ip/ws.' devlocal
-/usr/bin/passwd -l root
-
-# Add to sudoers file
-sudo bash -c 'cat > /etc/sudoers.d/tableau-devit-local <<EOF
-# Tableau DevIT Managed
-
-# Allow following accounts full admin with no password prompt
-it  ALL=(ALL)  NOPASSWD: ALL
-devlocal  ALL=(ALL)  NOPASSWD: ALL
-EOF'
-sudo chmod 644 /etc/sudoers.d/tableau-devit-local
+# Add it and user and set passwd
+sudo /usr/sbin/useradd -m -d /home/it -s /bin/bash -p '$1$6982c48E$5Ap/qdWzYDGG.8fqsNSpz0' -G sudo,audio,cdrom,video it
 
 # Vmware Virtual Machine
-/usr/bin/apt-get install -y open-vm-tools
+sudo /usr/bin/apt-get install -y open-vm-tools
+
+# Configure rc.local disk resizing on first boot
+sudo bash -c 'cat > /home/it/EXPAND_ROOT <<EOF
+disk="sda"
+startsector=\$(fdisk -u -l /dev/\$disk | grep \${disk}2 | awk "{print \$2}")
+parted /dev/\$disk --script rm 2
+parted /dev/\$disk --script "mkpart primary ext4 \${startsector}s -1s"
+parted /dev/\$disk --script set 2 lvm on
+pvresize /dev/\${disk}2
+lvextend --extents +100%FREE /dev/mapper/vg00-lv_root --resizefs
+EOF'
+sudo chmod +x /home/it/EXPAND_ROOT
+
+sudo sed -i '/exit 0/d' /etc/rc.local
+sudo bash -c '/bin/echo "if [ -f /home/it/EXPAND_ROOT ]; then bash /home/it/EXPAND_ROOT && rm /home/it/EXPAND_ROOT && reboot; fi" >> /etc/rc.local'
+
 fi
 
 # Update default editor from nano to vi
@@ -32,8 +36,8 @@ sudo timedatectl set-timezone America/Los_Angeles
 
 # apt-get update
 sudo /usr/bin/apt-get update
-sudo /usr/bin/apt-get upgrade
-sudo /usr/bin/apt-get autoremove
+sudo /usr/bin/apt-get -y upgrade
+sudo /usr/bin/apt-get -y autoremove
 
 # Configure resolv.conf
 sudo bash -c "/bin/cat > /etc/resolvconf/resolv.conf.d/base <<EOF

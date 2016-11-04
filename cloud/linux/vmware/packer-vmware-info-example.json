@@ -4,7 +4,8 @@
    "packer_remote_password": "password",
    "packer_remote_datastore": "datastore",
    "packer_remote_network": "NETWORK VLAN 1",
+   "packer_remote_cache_datastore": "esx-datastore-1",
    "packer_remote_cache_directory": "/packer_cache",
-   "packer_ssh_username": "root",
+   "packer_ssh_username": "devlocal",
    "packer_ssh_password": "password"
 }

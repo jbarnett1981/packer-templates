@@ -22,15 +22,14 @@ fi
 
 # Change to working dir
 cd /usr/local/devit/packer/cloud/linux/
-. openrc
 
 # Remove old templates with dates in the name
 find . -type f -name '*2[0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]*' | xargs rm -f
 
 # Create packer log env vars
 DATE=`date +%Y-%m-%d`
-PACKER_LOG=1
-PACKER_LOG_PATH=centos7-x64-$2-$DATE.log
+export PACKER_LOG=1
+export PACKER_LOG_PATH=$1-x64-$2-$DATE.log
 
 #QDATE=$(date +%Y)q$(( ($(date +%-m)-1)/3+1 ))
 IMAGE_NAME="$1-$2-$DATE"
@@ -44,5 +43,7 @@ if [ $2 = "vmware" ]; then
    /usr/local/bin/packer build --var-file vmware/packer-vmware-info.json "$1"-x64-"$2"-$DATE.json
    python vmware.py $1
 else
+   # source openstack env credentials and run build
+   source openrc
    /usr/local/bin/packer build "$1"-x64-"$2"-$DATE.json
 fi

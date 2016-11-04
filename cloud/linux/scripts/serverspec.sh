@@ -6,6 +6,7 @@ if [ "$DISTRO" = "CentOS" ]; then
 fi
 
 if [ "$DISTRO" = "Ubuntu" ]; then
+   sudo apt-get install -y software-properties-common
    sudo apt-add-repository -y ppa:brightbox/ruby-ng
    sudo apt-get update
    sudo apt-get install -y ruby2.3

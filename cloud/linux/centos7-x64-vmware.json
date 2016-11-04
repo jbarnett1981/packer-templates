@@ -23,6 +23,7 @@
       "remote_datastore": "{{user `packer_remote_datastore`}}",
       "remote_username": "{{user `packer_remote_username`}}",
       "remote_password": "{{user `packer_remote_password`}}",
+      "remote_cache_datastore": "{{user `packer_remote_cache_datastore`}}",
       "remote_cache_directory": "{{user `packer_remote_cache_directory`}}",
       "remote_type": "esx5",
       "vnc_disable_password": "True",
