@@ -1,5 +1,29 @@
 ### Tableau post config
 
+### Configure Manufacturer variable
+hwtype=$(dmesg | grep "DMI:" | awk '{print $4}')
+
+#### Install VMware Tools if host is type "VMware"
+if [[ $hwtype = *"VMware"* ]]; then
+# Add it and devlocal user and set passwd
+/usr/sbin/useradd -p '$1$dXpBbMXn$bbe9bdyuZK6X8p6qrQOGb.' -G wheel,adm,systemd-journal it
+/usr/sbin/useradd -p '$1$vSaIsmF4$9EruGmdayNV/iWvD6dJhm/' -G adm devlocal
+/usr/bin/passwd -l root
+
+# Add to sudoers file
+sudo bash -c 'cat > /etc/sudoers.d/tableau-devit-local <<EOF
+# Tableau DevIT Managed
+
+# Allow following accounts full admin with no password prompt
+it  ALL=(ALL)  NOPASSWD: ALL
+devlocal  ALL=(ALL)  NOPASSWD: ALL
+EOF'
+sudo chmod 644 /etc/sudoers.d/tableau-devit-local
+
+# Vmware Virtual Machine
+yum -y install open-vm-tools
+fi
+
 # Register with RHN and enable repos if Red Hat detected system
 swtype=$(awk '{print $1 " " $2}' /etc/redhat-release)
 if [[ $swtype == "Red Hat" ]]; then
@@ -16,7 +40,9 @@ sudo systemctl stop firewalld
 
 # Tell NetworkManager to STEP OFF of resolv.conf, we got dis
 # sudo bash -c 'echo "dns=none" >> /etc/NetworkManager/NetworkManager.conf'
-sudo sed -i 's/^PEERDNS.*/PEERDNS="no"/' /etc/sysconfig/network-scripts/ifcfg-eth0
+IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
+if grep -q PEERDNS "$IFCFG"; then sudo sed -i 's/^PEERDNS.*/PEERDNS=no/' $IFCFG; else sudo echo "PEERDNS=no" >> $IFCFG; fi
+#sudo sed -i 's/^PEERDNS.*/PEERDNS="no"/' /etc/sysconfig/network-scripts/ifcfg-eth0
 
 # Configure resolv.conf
 sudo bash -c 'cat > /etc/resolv.conf <<EOF

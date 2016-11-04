@@ -1,0 +1,10 @@
+{"creds": {
+    "vmware": {
+        "host": "vcenter.example.com",
+        "port": "443",
+        "user": "admin",
+        "password": "password",
+        "datastore": "[datastore]"
+    }
+ }
+}

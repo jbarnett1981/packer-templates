@@ -1,22 +1,40 @@
 {
+  "variables": {
+        "disk_size": "10140",
+        "iso_checksum": "88c0437f0a14c6e2c94426df9d43cd67",
+        "iso_url": "http://dvcobblervl01.dev.tsi.lan/iso/CentOS-7-x86_64-Minimal-1511.iso"
+    },
+
   "builders": [{
       "type": "vmware-iso",
-      "iso_url": "https://dvcobblervl01.dev.tsi.lan/iso/CentOS-7-x86_64-Minimal-1511.iso",
-      "iso_checksum": "88c0437f0a14c6e2c94426df9d43cd67",
-      "iso_checksum_type": "md5",
-      "ssh_username": "packer",
-      "shutdown_command": "shutdown -P now",
+      "vm_name": "IMAGE_NAME",
+      "guest_os_type": "centos-64",
+      "headless": true,
+      "output_directory": "/packer_images/IMAGE_NAME",
       "boot_command": ["<tab> biosdevname=0 net.ifnames=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7-vmware.cfg<enter><wait>"],
       "boot_wait": "10s",
+      "disk_size": "{{ user `disk_size` }}",
       "http_directory": "http",
-      "ssh_username": "root",
-      "ssh_password": "k9isa2th",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "md5",
+      "iso_url": "{{ user `iso_url` }}",
+      "disk_type_id": "thin",
+      "remote_host": "{{user `packer_remote_host`}}",
+      "remote_datastore": "{{user `packer_remote_datastore`}}",
+      "remote_username": "{{user `packer_remote_username`}}",
+      "remote_password": "{{user `packer_remote_password`}}",
+      "remote_cache_directory": "{{user `packer_remote_cache_directory`}}",
+      "remote_type": "esx5",
+      "vnc_disable_password": "True",
+      "ssh_username": "{{user `packer_ssh_username`}}",
+      "ssh_password": "{{user `packer_ssh_password`}}",
       "ssh_port": 22,
+      "ssh_pty": "True",
       "ssh_wait_timeout": "10000s",
       "shutdown_command": "sed -i '/HWADDR/d' /etc/sysconfig/network-scripts/ifcfg-eth0; echo '/sbin/halt -h -p' > shutdown.sh; sh 'shutdown.sh'",
       "vmx_data": {
         "virtualHW.version": "11",
-        "ethernet0.networkName": "VLAN 1520 - 10.26.128.0/23 - DevIT",
+        "ethernet0.networkName": "{{user `packer_remote_network`}}",
         "ethernet0.present": "TRUE",
         "ethernet0.virtualDev": "vmxnet3",
         "memsize": "2048",
@@ -26,12 +44,46 @@
         "scsi0:0.present": "TRUE",
         "scsi0:0.redo": "",
         "ide0:0.present": "FALSE"
-        },
-        "vmx_data_post": {
-        "ide1:0.startConnected" : "FALSE",
-        "ide1:0.deviceType" : "atapi-cdrom",
-        "ide1:0.fileName" : "cdrom0",
-        "ide1:0.present" : "TRUE"
-        }
-     }]
+       },
+       "vmx_data_post": {
+       "ide1:0.startConnected" : "FALSE",
+       "ide1:0.deviceType" : "atapi-cdrom",
+       "ide1:0.fileName" : "cdrom0",
+       "ide1:0.present" : "TRUE"
+       }
+    }],
+
+  "provisioners": [
+   {
+      "type": "shell",
+      "inline": ["touch /root/EXPAND-ROOT; echo 'if [ -f /root/EXPAND-ROOT ]; then yum -y install cloud-utils-growpart && growpart /dev/sda 2 && partprobe && pvresize /dev/sda2 && lvextend -l 100%FREE /dev/mapper/vg00-lv_root && xfs_growfs /dev/mapper/vg00-lv_root && rm /root/EXPAND-ROOT; fi' >> /etc/rc.local"]
+   },
+   {
+    "type": "shell",
+    "script": "scripts/post_install_cloud_centos.sh"
+   },
+   {
+    "type": "file",
+    "source": "tests",
+    "destination": "/tmp"
+   },
+   {
+    "type": "shell",
+    "script": "scripts/serverspec.sh"
+   },
+   {
+    "type": "file",
+    "source": "scripts/domain_join_kerb_cloud.sh",
+    "destination": "/home/devlocal/domain_join.sh"
+   },
+   {
+    "type": "file",
+    "source": "scripts/install_puppet.sh",
+    "destination": "/home/devlocal/install_puppet.sh"
+   },
+   {
+    "type": "shell",
+    "inline": ["sudo rm -rf /tmp/*"]
+   }
+   ]
 }
