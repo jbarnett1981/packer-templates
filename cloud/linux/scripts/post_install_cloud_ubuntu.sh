@@ -1,5 +1,29 @@
 ### Tableau post config
 
+### Configure Manufacturer variable
+hwtype=$(dmesg | grep "DMI:" | awk '{print $4}')
+
+#### Install VMware Tools if host is type "VMware"
+if [[ $hwtype = *"VMware"* ]]; then
+# Add it and devlocal user and set passwd
+/usr/sbin/useradd -m -d /home/it -s /bin/bash -p '$1$6982c48E$5Ap/qdWzYDGG.8fqsNSpz0' it
+/usr/sbin/useradd -m -d /home/devlocal -s /bin/bash -p '$1$bsVx7TxS$VuBulM.4dhVRAbD2ip/ws.' devlocal
+/usr/bin/passwd -l root
+
+# Add to sudoers file
+sudo bash -c 'cat > /etc/sudoers.d/tableau-devit-local <<EOF
+# Tableau DevIT Managed
+
+# Allow following accounts full admin with no password prompt
+it  ALL=(ALL)  NOPASSWD: ALL
+devlocal  ALL=(ALL)  NOPASSWD: ALL
+EOF'
+sudo chmod 644 /etc/sudoers.d/tableau-devit-local
+
+# Vmware Virtual Machine
+/usr/bin/apt-get install -y open-vm-tools
+fi
+
 # Update default editor from nano to vi
 sudo update-alternatives --set editor /usr/bin/vim.basic
 
