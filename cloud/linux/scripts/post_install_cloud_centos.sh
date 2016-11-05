@@ -35,7 +35,9 @@ sudo systemctl stop firewalld
 # sudo bash -c 'echo "dns=none" >> /etc/NetworkManager/NetworkManager.conf'
 export IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
 if grep -q PEERDNS "$IFCFG"; then sudo -E sed -i 's/^PEERDNS.*/PEERDNS=no/' $IFCFG; else sudo -E bash -c 'echo "PEERDNS=no" >> $IFCFG'; fi
-#sudo sed -i 's/^PEERDNS.*/PEERDNS="no"/' /etc/sysconfig/network-scripts/ifcfg-eth0
+
+# Remove HWADDR from NIC
+sudo -E sed -i '/HWADDR/d' $IFCFG
 
 # Configure resolv.conf
 sudo bash -c 'cat > /etc/resolv.conf <<EOF

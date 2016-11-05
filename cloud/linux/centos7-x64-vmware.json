@@ -32,7 +32,7 @@
       "ssh_port": 22,
       "ssh_pty": "True",
       "ssh_wait_timeout": "10000s",
-      "shutdown_command": "sed -i '/HWADDR/d' /etc/sysconfig/network-scripts/ifcfg-eth0; echo '/sbin/halt -h -p' > shutdown.sh; sh 'shutdown.sh'",
+      "shutdown_command": "sudo shutdown -P now",
       "vmx_data": {
         "virtualHW.version": "11",
         "ethernet0.networkName": "{{user `packer_remote_network`}}",

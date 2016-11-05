@@ -4,6 +4,7 @@ if os[:family] == 'redhat'
 
    describe file('/etc/sysconfig/network-scripts/ifcfg-eth0') do
       its(:content) { should match /PEERDNS=no/ }
+      its(:content) { should_not match /HWADDR=/ }
    end
 end
 
