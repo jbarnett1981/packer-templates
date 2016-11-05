@@ -7,7 +7,8 @@ hwtype=$(dmesg | grep "DMI:" | awk '{print $4}')
 if [[ $hwtype = *"VMware"* ]]; then
 # Add it and devlocal user and set passwd
 /usr/sbin/useradd -p '$1$dXpBbMXn$bbe9bdyuZK6X8p6qrQOGb.' -G wheel,adm,systemd-journal it
-/usr/sbin/useradd -p '$1$vSaIsmF4$9EruGmdayNV/iWvD6dJhm/' -G adm devlocal
+
+# Lock root passwd
 /usr/bin/passwd -l root
 
 # Add to sudoers file

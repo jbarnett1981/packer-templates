@@ -57,7 +57,7 @@
   "provisioners": [
    {
       "type": "shell",
-      "inline": ["touch /root/EXPAND-ROOT; echo 'if [ -f /root/EXPAND-ROOT ]; then yum -y install cloud-utils-growpart && growpart /dev/sda 2 && partprobe && pvresize /dev/sda2 && lvextend -l 100%FREE /dev/mapper/vg00-lv_root && xfs_growfs /dev/mapper/vg00-lv_root && rm /root/EXPAND-ROOT; fi' >> /etc/rc.local"]
+      "inline": ["touch /home/devlocal/EXPAND-ROOT; echo 'if [ -f /home/devlocal/EXPAND-ROOT ]; then sudo yum -y install cloud-utils-growpart && sudo growpart /dev/sda 2 && sudo partprobe && sudo pvresize /dev/sda2 && sudo lvextend -l 100%FREE /dev/mapper/vg00-lv_root && sudo xfs_growfs /dev/mapper/vg00-lv_root && sudo rm /home/devlocal/EXPAND-ROOT; fi' >> /etc/rc.local"]
    },
    {
     "type": "shell",
