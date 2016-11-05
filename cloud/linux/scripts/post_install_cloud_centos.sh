@@ -1,11 +1,5 @@
 ### Tableau post config
 
-# Register with RHN and enable repos if Red Hat detected system
-swtype=$(awk '{print $1 " " $2}' /etc/redhat-release)
-if [[ $swtype == "Red Hat" ]]; then
-sudo /usr/sbin/subscription-manager register --username=devit-tableau --password=P@ssw0rd! --auto-attach --force
-fi
-
 ### Configure Manufacturer variable
 hwtype=$(dmesg | grep "DMI:" | awk '{print $4}')
 
@@ -14,19 +8,6 @@ if [[ $hwtype = *"VMware"* ]]; then
 # Add it and devlocal user and set passwd
 sudo /usr/sbin/useradd -p '$1$dXpBbMXn$bbe9bdyuZK6X8p6qrQOGb.' -G wheel,adm,systemd-journal it
 
-# Lock root passwd
-sudo /usr/bin/passwd -l root
-
-# Add to sudoers file
-sudo bash -c 'cat > /etc/sudoers.d/tableau-devit-local <<EOF
-# Tableau DevIT Managed
-
-# Allow following accounts full admin with no password prompt
-it  ALL=(ALL)  NOPASSWD: ALL
-devlocal  ALL=(ALL)  NOPASSWD: ALL
-EOF'
-sudo chmod 644 /etc/sudoers.d/tableau-devit-local
-
 # Vmware Virtual Machine
 sudo yum -y install open-vm-tools
 
@@ -34,6 +15,12 @@ sudo yum -y install open-vm-tools
 touch /home/devlocal/EXPAND_ROOT
 sudo bash -c 'echo "if [ -f /home/devlocal/EXPAND_ROOT ]; then sudo yum -y install cloud-utils-growpart && sudo growpart /dev/sda 2 && sudo partprobe && sudo pvresize /dev/sda2 && sudo lvextend -l 100%FREE /dev/mapper/vg00-lv_root && sudo xfs_growfs /dev/mapper/vg00-lv_root && sudo rm /home/devlocal/EXPAND_ROOT; fi" >> /etc/rc.local'
 
+fi
+
+# Register with RHN and enable repos if Red Hat detected system
+swtype=$(awk '{print $1 " " $2}' /etc/redhat-release)
+if [[ $swtype == "Red Hat" ]]; then
+sudo /usr/sbin/subscription-manager register --username=devit-tableau --password=P@ssw0rd! --auto-attach --force
 fi
 
 # Configure timezone
