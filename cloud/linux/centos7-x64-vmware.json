@@ -56,10 +56,6 @@
 
   "provisioners": [
    {
-      "type": "shell",
-      "inline": ["touch /home/devlocal/EXPAND-ROOT; echo 'if [ -f /home/devlocal/EXPAND-ROOT ]; then sudo yum -y install cloud-utils-growpart && sudo growpart /dev/sda 2 && sudo partprobe && sudo pvresize /dev/sda2 && sudo lvextend -l 100%FREE /dev/mapper/vg00-lv_root && sudo xfs_growfs /dev/mapper/vg00-lv_root && sudo rm /home/devlocal/EXPAND-ROOT; fi' >> /etc/rc.local"]
-   },
-   {
     "type": "shell",
     "script": "scripts/post_install_cloud_centos.sh"
    },

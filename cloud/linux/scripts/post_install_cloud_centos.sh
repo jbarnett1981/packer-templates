@@ -23,6 +23,11 @@ sudo chmod 644 /etc/sudoers.d/tableau-devit-local
 
 # Vmware Virtual Machine
 yum -y install open-vm-tools
+
+# Configure disk resizing on first boot
+touch /home/devlocal/EXPAND_ROOT
+sudo bash -c 'echo "if [ -f /home/devlocal/EXPAND_ROOT ]; then sudo yum -y install cloud-utils-growpart && sudo growpart /dev/sda 2 && sudo partprobe && sudo pvresize /dev/sda2 && sudo lvextend -l 100%FREE /dev/mapper/vg00-lv_root && sudo xfs_growfs /dev/mapper/vg00-lv_root && sudo rm /home/devlocal/EXPAND_ROOT; fi" >> /etc/rc.local'
+
 fi
 
 # Register with RHN and enable repos if Red Hat detected system
