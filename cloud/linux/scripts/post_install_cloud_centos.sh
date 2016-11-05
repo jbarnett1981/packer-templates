@@ -33,8 +33,8 @@ sudo systemctl stop firewalld
 
 # Tell NetworkManager to STEP OFF of resolv.conf, we got dis
 # sudo bash -c 'echo "dns=none" >> /etc/NetworkManager/NetworkManager.conf'
-IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
-if grep -q PEERDNS "$IFCFG"; then sudo sed -i 's/^PEERDNS.*/PEERDNS=no/' $IFCFG; else sudo bash -c 'echo "PEERDNS=no" >> $IFCFG'; fi
+export IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
+if grep -q PEERDNS "$IFCFG"; then sudo -E sed -i 's/^PEERDNS.*/PEERDNS=no/' $IFCFG; else sudo -E bash -c 'echo "PEERDNS=no" >> $IFCFG'; fi
 #sudo sed -i 's/^PEERDNS.*/PEERDNS="no"/' /etc/sysconfig/network-scripts/ifcfg-eth0
 
 # Configure resolv.conf
