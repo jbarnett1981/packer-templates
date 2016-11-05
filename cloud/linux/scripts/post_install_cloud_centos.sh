@@ -12,9 +12,10 @@ sudo /usr/sbin/useradd -p '$1$dXpBbMXn$bbe9bdyuZK6X8p6qrQOGb.' -G wheel,adm,syst
 sudo yum -y install open-vm-tools
 
 # Configure disk resizing on first boot
-touch /home/devlocal/EXPAND_ROOT
-sudo bash -c 'echo "if [ -f /home/devlocal/EXPAND_ROOT ]; then sudo yum -y install cloud-utils-growpart && sudo growpart /dev/sda 2 && sudo partprobe && sudo pvresize /dev/sda2 && sudo lvextend -l 100%FREE /dev/mapper/vg00-lv_root && sudo xfs_growfs /dev/mapper/vg00-lv_root && sudo rm /home/devlocal/EXPAND_ROOT; fi" >> /etc/rc.local'
-
+sudo touch /EXPAND_ROOT
+sudo chmod 666 /EXPAND_ROOT
+sudo bash -c 'echo "if [ -f /EXPAND_ROOT ]; then sudo yum -y install cloud-utils-growpart && sudo growpart /dev/sda 2 && sudo partprobe && sudo pvresize /dev/sda2 && sudo lvextend -l 100%FREE /dev/mapper/vg00-lv_root && sudo xfs_growfs /dev/mapper/vg00-lv_root && sudo rm /EXPAND_ROOT; fi" >> /etc/rc.local'
+sudo chmod +x /etc/rc.d/rc.local
 fi
 
 # Register with RHN and enable repos if Red Hat detected system
