@@ -11,6 +11,9 @@ sudo /usr/sbin/useradd -p '$1$dXpBbMXn$bbe9bdyuZK6X8p6qrQOGb.' -G wheel,adm,syst
 # Vmware Virtual Machine
 sudo yum -y install open-vm-tools
 
+# Allow sudo without tty
+sudo bash -c 'sed -i "s|Defaults    requiretty|Defaults    !requiretty|g" /etc/sudoers'
+
 # Configure disk resizing on first boot
 sudo touch /EXPAND_ROOT
 sudo chmod 666 /EXPAND_ROOT
@@ -54,23 +57,7 @@ sudo yum -y install git
 # Install required tools
 sudo yum -y install vim net-tools openssh-server nfs-utils samba-client samba-common cifs-utils wget perl zip redhat-lsb-core bind-utils tree
 
-# Disable requiretty in sudoers
-sudo bash -c 'echo "Defaults:devlocal !requiretty" >> /etc/sudoers'
-
-# Add Tableau DevIT sudoers file
-sudo bash -c 'cat > /etc/sudoers.d/tableau-devit <<EOF
-# Tableau DevIT Managed
-# Allow zabbix user to restart puppet agent
-zabbix ALL=NOPASSWD: /etc/init.d/puppet restart
-
-# Allow following accounts full admin with no password prompt
-builder  ALL=(ALL)  NOPASSWD: ALL
-
-# Allow following groups full admin with password prompt
-%devit  ALL=(ALL)   NOPASSWD: ALL
-%development    ALL=(ALL)       ALL
-EOF'
-sudo chmod 644 /etc/sudoers.d/tableau-devit
+sudo bash -c 'sed -i "s|Defaults    requiretty|Defaults    !requiretty|g" /etc/sudoers'
 
 # Install EPEL repo
 swver=$(lsb_release -r | awk '{print $2}')

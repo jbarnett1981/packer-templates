@@ -11,6 +11,9 @@ sudo /usr/sbin/useradd -m -d /home/it -s /bin/bash -p '$1$6982c48E$5Ap/qdWzYDGG.
 # Vmware Virtual Machine
 sudo /usr/bin/apt-get install -y open-vm-tools
 
+# Allow sudo without tty
+sudo bash -c 'sed -i "s|Defaults    requiretty|Defaults    !requiretty|g" /etc/sudoers'
+
 sudo sed -i '/exit 0/d' /etc/rc.local
 sudo bash -c '/bin/echo "if [ -f /home/devlocal/EXPAND_ROOT ]; then sudo bash /home/devlocal/EXPAND_ROOT && rm /home/devlocal/EXPAND_ROOT && sudo reboot; fi" >> /etc/rc.local'
 
@@ -39,20 +42,22 @@ sudo /sbin/resolvconf -u
 # Install required tools
 sudo /usr/bin/apt-get install -y openssh-server build-essential ntp nfs-common git smbclient cifs-utils wget sysv-rc-conf vim zip tree
 
-# Add Tableau DevIT sudoers file
-sudo bash -c "cat > /etc/sudoers.d/tableau-devit <<EOF
-# Tableau DevIT Managed
-# Allow zabbix user to restart puppet agent
-zabbix ALL=NOPASSWD: /etc/init.d/puppet restart
+# # Add Tableau DevIT sudoers file
+# sudo bash -c "cat > /etc/sudoers.d/tableau-devit <<EOF
+# # Tableau DevIT Managed
+# # Allow zabbix user to restart puppet agent
+# zabbix ALL=NOPASSWD: /etc/init.d/puppet restart
 
-# Allow following accounts full admin with no password prompt
-builder  ALL=(ALL)  NOPASSWD: ALL
+# # Allow following accounts full admin with no password prompt
+# builder  ALL=(ALL)  NOPASSWD: ALL
 
-# Allow following groups full admin with password prompt
-%devit  ALL=(ALL)   NOPASSWD: ALL
-%development    ALL=(ALL)       ALL
-EOF"
-sudo chmod 644 /etc/sudoers.d/tableau-devit
+# # Allow following groups full admin with password prompt
+# %devit  ALL=(ALL)   NOPASSWD: ALL
+# %development    ALL=(ALL)       ALL
+# EOF"
+
+# Disable requiretty in sudoers
+sudo bash -c 'sed -i "s|Defaults    requiretty|Defaults    !requiretty|g" /etc/sudoers'
 
 ### base build is complete ###
 
