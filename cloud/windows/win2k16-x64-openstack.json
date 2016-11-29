@@ -1,0 +1,51 @@
+{
+    "builders": [
+        {
+            "name": "win2k16",
+            "type": "qemu",
+            "format":"qcow2",
+            "qemuargs": [
+            	["-m", "8192m"],
+            	["-smp", 4],
+                ["-usbdevice", "tablet"]
+            ],
+            "accelerator": "kvm",
+            "headless": "true",
+            "vnc_bind_address": "0.0.0.0",
+            "disk_size": "{{user `packer_disk_size`}}",
+            "disk_interface":"virtio",
+            "iso_url": "{{user `packer_iso_url`}}",
+            "iso_checksum_type": "md5",
+            "iso_checksum": "{{ user `packer_iso_checksum` }}",
+            "output_directory": "{{user `packer_output_directory`}}",
+            "communicator": "winrm",
+            "winrm_username": "{{user `packer_winrm_username`}}",
+            "winrm_password": "{{user `packer_winrm_password`}}",
+            "winrm_timeout": "24h",
+            "shutdown_command": "C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:C:/Windows/Panther/Unattend/unattend.xml /quiet /shutdown",
+            "shutdown_timeout": "15m",
+            "boot_wait": "2s",
+            "floppy_files": [
+                "floppy/answer_files/2016/Autounattend.xml",
+                "floppy/drivers/virtio/viostor/2k16/amd64/viostor.cat",
+                "floppy/drivers/virtio/viostor/2k16/amd64/viostor.inf",
+                "floppy/drivers/virtio/viostor/2k16/amd64/viostor.sys",
+                "floppy/drivers/virtio/viostor/2k16/amd64/viostor.pdb",
+                "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvmco.dll",
+                "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvm.cat",
+                "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvm.inf",
+                "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvm.sys",
+                "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvm.pdb",
+                "floppy/scripts/postunattend.xml",
+                "floppy/scripts/boxstarter.ps1",
+                "floppy/scripts/package.ps1"
+            ]
+        }
+    ],
+    "provisioners": [
+     {
+      "type": "powershell",
+      "script": "scripts/cloudinit.ps1"
+     }
+     ]
+}

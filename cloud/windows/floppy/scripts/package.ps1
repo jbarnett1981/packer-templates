@@ -12,20 +12,20 @@ Disable-UAC
 
 Write-BoxstarterMessage "Removing unused features..."
 Remove-WindowsFeature -Name 'Powershell-ISE'
-Get-WindowsFeature | 
-? { $_.InstallState -eq 'Available' } | 
+Get-WindowsFeature |
+? { $_.InstallState -eq 'Available' } |
 Uninstall-WindowsFeature -Remove
 
 Write-BoxstarterMessage "Adding REG config for TSI.LAN WSUS server..."
-REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate  /v WUServer /t REG_SZ /d http://1krkdvvwwsus01.tsi.lan:8530 /f 
-REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate  /v WUStatusServer /t REG_SZ /d http://1krkdvvwwsus01.tsi.lan:8530 /f 
-REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate  /v TargetGroup /t REG_SZ /d TSI_DevIT_General /f 
+REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate  /v WUServer /t REG_SZ /d http://1krkdvvwwsus01.tsi.lan:8530 /f
+REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate  /v WUStatusServer /t REG_SZ /d http://1krkdvvwwsus01.tsi.lan:8530 /f
+REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate  /v TargetGroup /t REG_SZ /d TSI_DevIT_General /f
 REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate  /v TargetGroupEnabled /t REG_DWORD /d 00000001 /f
- 
-REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU  /v NoAutoUpdate /t REG_DWORD /d 00000000 /f 
-REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU  /v AUOptions /t REG_DWORD /d 00000004 /f 
-REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU  /v ScheduledInstallDay /t REG_DWORD /d 00000000 /f 
-REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU  /v ScheduledInstallTime /t REG_DWORD /d 00000003 /f 
+
+REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU  /v NoAutoUpdate /t REG_DWORD /d 00000000 /f
+REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU  /v AUOptions /t REG_DWORD /d 00000004 /f
+REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU  /v ScheduledInstallDay /t REG_DWORD /d 00000000 /f
+REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU  /v ScheduledInstallTime /t REG_DWORD /d 00000003 /f
 REG ADD HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU  /v UseWUServer /t REG_DWORD /d 00000001 /f
 
 Install-WindowsUpdate -AcceptEula
@@ -56,7 +56,7 @@ Optimize-Volume -DriveLetter C
 Write-BoxstarterMessage "0ing out empty space..."
 wget http://download.sysinternals.com/files/SDelete.zip -OutFile sdelete.zip
 [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem")
-[System.IO.Compression.ZipFile]::ExtractToDirectory("sdelete.zip", ".") 
+[System.IO.Compression.ZipFile]::ExtractToDirectory("sdelete.zip", ".")
 ./sdelete.exe /accepteula -z c:
 
 mkdir C:\Windows\Panther\Unattend
@@ -82,7 +82,7 @@ winrm set winrm/config/client/auth '@{Basic="true"}'
 winrm set winrm/config/listener?Address=*+Transport=HTTP '@{Port="5985"} '
 
 netsh advfirewall firewall set rule group="remote administration" new enable=yes
-netsh firewall add portopening TCP 5985 "Port 5985"
+netsh advfirewall firewall add rule name="Port 5985" dir=in action=allow protocol=TCP localport=5985
 net stop winrm
 sc.exe config winrm start= auto
 net start winrm

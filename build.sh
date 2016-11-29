@@ -1,4 +1,7 @@
 #!/bin/bash
+# jbarnett@tableau.com
+# 11/29/2016
+# Wrapper script to launch linux/win builds of either vmware or openstack variety
 
 MINPARAMS=2
 
@@ -6,12 +9,12 @@ if [ $# -lt "$MINPARAMS" ]
 then
   echo
   echo "This script needs at least $MINPARAMS command-line arguments!"
-  echo "Ex: bash `basename $0` centos7|ubuntu1404|ubuntu1604 vmware|openstack"
+  echo "Ex: bash `basename $0` centos7|ubuntu1404|ubuntu1604|win2k12r2|win2k16 vmware|openstack"
   exit 1
 fi
 
-if ! [[ "$1" =~ ^(centos7|ubuntu1404|ubuntu1604)$ ]]; then
-  echo "Unsupported argument. Use 'centos7 or 'ubuntu1404' or 'ubuntu1604'."
+if ! [[ "$1" =~ ^(centos7|ubuntu1404|ubuntu1604|win2k12r2|win2k16)$ ]]; then
+  echo "Unsupported argument. Use 'centos7', 'ubuntu1404', 'ubuntu1604', 'win2k16r2' or 'win2k16'."
   exit 1
 fi
 
@@ -20,8 +23,18 @@ if ! [[ "$2" =~ ^(vmware|openstack)$ ]]; then
   exit 1
 fi
 
+if [[ $2 = 'openstack' ]]; then
+   # source openstack env credentials and run build
+   source ./openrc
+fi
+
 # Change to working dir
-cd /usr/local/devit/packer/cloud/linux/
+if [[ $1 = win* ]]; then
+	cd ./cloud/windows/
+	VARS="--var-file vars/$1_vars.json"
+else
+	cd ./cloud/linux/
+fi
 
 # Remove old templates & logs
 find . -type f -name '*2[0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]*' | xargs rm -f
@@ -30,6 +43,9 @@ find . -type f -name '*2[0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]*' | xargs rm -f
 DATE=`date +%Y-%m-%d`
 export PACKER_LOG=1
 export PACKER_LOG_PATH=$1-x64-$2-$DATE.log
+
+# Remove old kvm bits
+rm -rf /kvm-data/$1
 
 #QDATE=$(date +%Y)q$(( ($(date +%-m)-1)/3+1 ))
 IMAGE_NAME="$1-$2-$DATE"
@@ -43,7 +59,6 @@ if [ $2 = "vmware" ]; then
    /usr/local/bin/packer build --var-file vmware/packer-vmware-info.json "$1"-x64-"$2"-$DATE.json
    python vmware.py $1
 else
-   # source openstack env credentials and run build
-   source openrc
-   /usr/local/bin/packer build "$1"-x64-"$2"-$DATE.json
+   # Run packer build
+   /usr/local/bin/packer build $VARS "$1"-x64-"$2"-$DATE.json
 fi

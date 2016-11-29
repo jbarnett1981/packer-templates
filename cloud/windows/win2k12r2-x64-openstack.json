@@ -1,7 +1,7 @@
 {
     "builders": [
         {
-        	"name": "windows-2012r2",
+        	"name": "win2k12r2",
             "type": "qemu",
             "format":"qcow2",
 	    	"qemuargs": [
@@ -11,6 +11,7 @@
             ],
             "accelerator": "kvm",
 	    	"headless": "true",
+	    	"vnc_bind_address": "0.0.0.0",
             "disk_size": "{{user `packer_disk_size`}}",
             "disk_interface":"virtio",
             "iso_url": "{{user `packer_iso_url`}}",
@@ -38,5 +39,11 @@
                 "floppy/scripts/package.ps1"
             ]
         }
-    ]
+    ],
+    "provisioners": [
+     {
+      "type": "powershell",
+      "script": "scripts/cloudinit.ps1"
+     }
+     ]
 }
