@@ -8,7 +8,11 @@
             	["-m", "8192m"],
             	["-smp", 4],
                 ["-usbdevice", "tablet"],
-                ["-cpu", "host"]
+                ["-cpu", "host"],
+                ["-netdev", "user,id=net0"],
+                ["-device", "rtl8139,netdev=net0"],
+                ["-cpu", "host"],
+                ["-balloon", "virtio"]
             ],
             "accelerator": "kvm",
             "headless": "true",
@@ -28,18 +32,16 @@
             "boot_wait": "2s",
             "floppy_files": [
                 "floppy/answer_files/2016/Autounattend.xml",
+                "floppy/scripts/postunattend.xml",
+                "floppy/scripts/boxstarter.ps1",
+                "floppy/scripts/package.ps1",
                 "floppy/drivers/virtio/viostor/2k16/amd64/viostor.cat",
                 "floppy/drivers/virtio/viostor/2k16/amd64/viostor.inf",
                 "floppy/drivers/virtio/viostor/2k16/amd64/viostor.sys",
-                "floppy/drivers/virtio/viostor/2k16/amd64/viostor.pdb",
                 "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvmco.dll",
                 "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvm.cat",
                 "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvm.inf",
-                "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvm.sys",
-                "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvm.pdb",
-                "floppy/scripts/postunattend.xml",
-                "floppy/scripts/boxstarter.ps1",
-                "floppy/scripts/package.ps1"
+                "floppy/drivers/virtio/NetKVM/2k16/amd64/netkvm.sys"
             ]
         }
     ],
