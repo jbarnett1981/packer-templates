@@ -53,11 +53,12 @@ Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
 Write-BoxstarterMessage "defragging..."
 Optimize-Volume -DriveLetter C
 
-Write-BoxstarterMessage "0ing out empty space..."
-wget http://download.sysinternals.com/files/SDelete.zip -OutFile sdelete.zip
-[System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem")
-[System.IO.Compression.ZipFile]::ExtractToDirectory("sdelete.zip", ".")
-./sdelete.exe /accepteula -z c:
+# Not doing this - it takes over 24hours for 1 pass
+# Write-BoxstarterMessage "0ing out empty space..."
+# wget http://download.sysinternals.com/files/SDelete.zip -OutFile sdelete.zip
+# [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem")
+# [System.IO.Compression.ZipFile]::ExtractToDirectory("sdelete.zip", ".")
+# ./sdelete.exe /accepteula -z c:
 
 mkdir C:\Windows\Panther\Unattend
 copy-item a:\postunattend.xml C:\Windows\Panther\Unattend\unattend.xml
@@ -79,9 +80,9 @@ winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
 winrm set winrm/config/service '@{AllowUnencrypted="true"}'
 winrm set winrm/config/service/auth '@{Basic="true"}'
 winrm set winrm/config/client/auth '@{Basic="true"}'
-winrm set winrm/config/listener?Address=*+Transport=HTTP '@{Port="5985"} '
+winrm set winrm/config/listener?Address=*+Transport=HTTP '@{Port="5985"}'
 
-netsh advfirewall firewall set rule group="remote administration" new enable=yes
+netsh advfirewall firewall set rule group="remote desktop" new enable=yes
 netsh advfirewall firewall add rule name="Port 5985" dir=in action=allow protocol=TCP localport=5985
 net stop winrm
 sc.exe config winrm start= auto
