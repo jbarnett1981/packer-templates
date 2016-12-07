@@ -31,10 +31,10 @@ fi
 
 # Change to working dir
 if [[ $1 = win* ]]; then
-	cd ./cloud/windows/ || exit
-	VARS="--var-file vars/$1_vars.json"
+   cd ./cloud/windows/ || exit
+   VARS="vars/$1_vars.json"
 else
-	cd ./cloud/linux/ || exit
+   cd ./cloud/linux/ || exit
 fi
 
 # Remove old templates & logs
@@ -61,5 +61,5 @@ if [ "$2" = "vmware" ]; then
    python vmware.py "$1"
 else
    # Run packer build
-   /usr/local/bin/packer build "$VARS" "$1"-x64-"$2"-"$DATE".json
+   /usr/local/bin/packer build -var-file="$VARS" "$1"-x64-"$2"-"$DATE".json
 fi
