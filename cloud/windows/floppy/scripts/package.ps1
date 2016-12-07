@@ -83,6 +83,7 @@ winrm set winrm/config/client/auth '@{Basic="true"}'
 winrm set winrm/config/listener?Address=*+Transport=HTTP '@{Port="5985"}'
 
 netsh advfirewall firewall set rule group="remote desktop" new enable=yes
+netsh advfirewall firewall set rule group="Windows Remote Management" new enable=yes
 netsh advfirewall firewall add rule name="Port 5985" dir=in action=allow protocol=TCP localport=5985
 net stop winrm
 sc.exe config winrm start= auto
