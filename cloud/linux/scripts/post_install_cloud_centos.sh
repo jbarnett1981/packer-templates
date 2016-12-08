@@ -44,7 +44,7 @@ EOF'
 sudo chmod 644 /etc/resolv.conf
 
 # Add update_ifcfg to cron and execute on reboot
-sudo bash -c 'echo "@reboot root sleep 15 && bash /devlocal/update_ifcfg.sh" >> /etc/cron.d/update_ifcfg'
+sudo bash -c 'echo "@reboot root sleep 15 && bash /home/devlocal/update_ifcfg.sh" >> /etc/cron.d/update_ifcfg'
 sudo chmod 644 /etc/cron.d/update_ifcfg
 
 # Install git
