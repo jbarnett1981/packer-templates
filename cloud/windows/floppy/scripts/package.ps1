@@ -62,6 +62,7 @@ Optimize-Volume -DriveLetter C
 
 mkdir C:\Windows\Panther\Unattend
 copy-item a:\postunattend.xml C:\Windows\Panther\Unattend\unattend.xml
+copy-item a:\shutdown.bat c:\windows\temp\shutdown.bat
 
 Write-BoxstarterMessage "Recreate pagefile after sysprep"
 $System = GWMI Win32_ComputerSystem -EnableAllPrivileges
