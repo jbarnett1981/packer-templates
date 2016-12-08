@@ -79,6 +79,11 @@
     "destination": "/home/devlocal/install_puppet.sh"
    },
    {
+    "type": "file",
+    "source": "scripts/update_ifcfg.sh",
+    "destination": "/home/devlocal/update_ifcfg.sh"
+   },
+   {
     "type": "shell",
     "inline": ["sudo rm -rf /tmp/*"]
    }

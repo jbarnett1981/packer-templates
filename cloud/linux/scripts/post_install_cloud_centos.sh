@@ -35,19 +35,6 @@ sudo yum install -y firewalld
 sudo systemctl disable firewalld
 sudo systemctl stop firewalld
 
-# Remove NetworkManager, it sucks
-sudo systemctl stop NetworkManager
-sudo chkconfig NetworkManager off
-sudo yum erase -y NetworkManager
-sudo chkconfig network on
-
-export IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
-# Add/change PEERDNS=no in ifcfg-eth0
-if grep -q PEERDNS "$IFCFG"; then sudo -E sed -i 's/^PEERDNS.*/PEERDNS=no/' $IFCFG; else sudo -E bash -c 'echo "PEERDNS=no" >> $IFCFG'; fi
-
-# Remove HWADDR from ifcfg-eth0
-sudo -E sed -i '/HWADDR/d' $IFCFG
-
 # Configure resolv.conf
 sudo bash -c 'cat > /etc/resolv.conf <<EOF
 search tsi.lan dev.tsi.lan tableaucorp.com db.tsi.lan test.tsi.lan
@@ -55,21 +42,6 @@ nameserver 10.26.160.31
 nameserver 10.26.160.32
 EOF'
 sudo chmod 644 /etc/resolv.conf
-
-# And finally start the network service
-sudo systemctl start network
-
-# Stage HWADDR update in cron for first boot
-sudo bash -c 'cat >> /devlocal/update_ifcfg.sh <<EOF
-#!/bin/bash
-# Add correct HWADDR to ifcfg-eth0
-export HWADDR=$(ip addr show dev eth0 | grep ether | awk '{print $2}')
-if grep -q HWADDR "$IFCFG"; then sudo -E sed -i "s/^HWADDR.*/HWADDR=${HWADDR}/" $IFCFG; else sudo -E bash -c 'echo "HWADDR=${HWADDR}" >> $IFCFG'; fi
-rm -f /etc/cron.d/update_ifcfg
-reboot
-rm -f $0
-EOF'
-sudo chmod u+x /devlocal/update_ifcfg.sh
 
 # Add update_ifcfg to cron and execute on reboot
 sudo bash -c 'echo "@reboot root sleep 15 && bash /devlocal/update_ifcfg.sh" >> /etc/cron.d/update_ifcfg'
