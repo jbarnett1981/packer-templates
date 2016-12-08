@@ -20,4 +20,3 @@ systemctl start network
 # Cleanup
 rm -f /etc/cron.d/update_ifcfg
 /sbin/reboot
-rm -f $0
