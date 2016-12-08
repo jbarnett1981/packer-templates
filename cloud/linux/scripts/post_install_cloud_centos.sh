@@ -60,7 +60,7 @@ sudo chmod 644 /etc/resolv.conf
 sudo systemctl start network
 
 # Stage HWADDR update in cron for first boot
-sudo bash -c 'cat >> /root/update_ifcfg.sh <<EOF
+sudo bash -c 'cat >> /it/update_ifcfg.sh <<EOF
 #!/bin/bash
 # Add correct HWADDR to ifcfg-eth0
 export HWADDR=$(ip addr show dev eth0 | grep ether | awk '{print $2}')
@@ -69,10 +69,10 @@ rm -f /etc/cron.d/update_ifcfg
 reboot
 rm -f $0
 EOF'
-sudo chmod u+x /root/update_ifcfg.sh
+sudo chmod u+x /it/update_ifcfg.sh
 
 # Add update_ifcfg to cron and execute on reboot
-sudo bash -c 'echo "@reboot root sleep 15 && bash /root/update_ifcfg.sh" >> /etc/cron.d/update_ifcfg'
+sudo bash -c 'echo "@reboot root sleep 15 && bash /it/update_ifcfg.sh" >> /etc/cron.d/update_ifcfg'
 sudo chmod 644 /etc/cron.d/update_ifcfg
 
 # Install git
