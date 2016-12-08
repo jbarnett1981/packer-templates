@@ -45,9 +45,8 @@ export IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
 # Add/change PEERDNS=no in ifcfg-eth0
 if grep -q PEERDNS "$IFCFG"; then sudo -E sed -i 's/^PEERDNS.*/PEERDNS=no/' $IFCFG; else sudo -E bash -c 'echo "PEERDNS=no" >> $IFCFG'; fi
 
-# Add correct HWADDR to ifcfg-eth0q
-export HWADDR=$(ip addr show dev eth0 | grep ether | awk '{print $2}')
-if grep -q HWADDR "$IFCFG"; then sudo -E sed -i "s/^HWADDR.*/HWADDR=${HWADDR}/" $IFCFG; else sudo -E bash -c 'echo "HWADDR=${HWADDR}" >> $IFCFG'; fi
+# Remove HWADDR from ifcfg-eth0
+sudo -E sed -i '/HWADDR/d' $IFCFG
 
 # Configure resolv.conf
 sudo bash -c 'cat > /etc/resolv.conf <<EOF
@@ -59,6 +58,20 @@ sudo chmod 644 /etc/resolv.conf
 
 # And finally start the network service
 sudo systemctl start network
+
+# Stage HWADDR update in cron for first boot
+cat >> /tmp/update_ifcfg.sh <<EOF
+#!/bin/bash
+# Add correct HWADDR to ifcfg-eth0
+export HWADDR=$(ip addr show dev eth0 | grep ether | awk '{print $2}')
+if grep -q HWADDR "$IFCFG"; then sudo -E sed -i "s/^HWADDR.*/HWADDR=${HWADDR}/" $IFCFG; else sudo -E bash -c 'echo "HWADDR=${HWADDR}" >> $IFCFG'; fi
+rm -f /etc/cron.d/update_ifcfg
+EOF
+chmod u+x /tmp/update_ifcfg.sh
+
+# Add update_ifcfg to cron and execute on reboot
+echo "@reboot root sleep 15 && bash /tmp/update_ifcfg.sh" >> /etc/cron.d/update_ifcfg
+chmod 644 /etc/cron.d/update_ifcfg
 
 # Install git
 sudo yum -y install git
