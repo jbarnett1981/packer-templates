@@ -35,13 +35,19 @@ sudo yum install -y firewalld
 sudo systemctl disable firewalld
 sudo systemctl stop firewalld
 
-# Tell NetworkManager to STEP OFF of resolv.conf, we got dis
-# sudo bash -c 'echo "dns=none" >> /etc/NetworkManager/NetworkManager.conf'
+# Remove NetworkManager, it sucks
+sudo systemctl stop NetworkManager
+sudo chkconfig NetworkManager off
+sudo yum erase -y NetworkManager
+sudo chkconfig network on
+
 export IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
+# Add/change PEERDNS=no in ifcfg-eth0
 if grep -q PEERDNS "$IFCFG"; then sudo -E sed -i 's/^PEERDNS.*/PEERDNS=no/' $IFCFG; else sudo -E bash -c 'echo "PEERDNS=no" >> $IFCFG'; fi
 
-# Remove HWADDR from NIC
-sudo -E sed -i '/HWADDR/d' $IFCFG
+# Add correct HWADDR to ifcfg-eth0q
+export HWADDR=$(ip addr show dev eth0 | grep ether | awk '{print $2}')
+if grep -q HWADDR "$IFCFG"; then sudo -E sed -i "s/^HWADDR.*/HWADDR=${HWADDR}/" $IFCFG; else sudo -E bash -c 'echo "HWADDR=${HWADDR}" >> $IFCFG'; fi
 
 # Configure resolv.conf
 sudo bash -c 'cat > /etc/resolv.conf <<EOF
@@ -50,6 +56,9 @@ nameserver 10.26.160.31
 nameserver 10.26.160.32
 EOF'
 sudo chmod 644 /etc/resolv.conf
+
+# And finally start the network service
+sudo systemctl start network
 
 # Install git
 sudo yum -y install git
