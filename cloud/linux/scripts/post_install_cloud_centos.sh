@@ -8,6 +8,10 @@ if [[ $hwtype = *"VMware"* ]]; then
 # Add it and devlocal user and set passwd
 sudo /usr/sbin/useradd -p '$1$dXpBbMXn$bbe9bdyuZK6X8p6qrQOGb.' -G wheel,adm,systemd-journal it
 
+# Add update_ifcfg to cron and execute on reboot
+sudo bash -c 'echo "@reboot root sleep 120 && bash /home/devlocal/update_ifcfg.sh" >> /etc/cron.d/update_ifcfg'
+sudo chmod 644 /etc/cron.d/update_ifcfg
+
 # Vmware Virtual Machine
 sudo yum -y install open-vm-tools
 
@@ -43,9 +47,11 @@ nameserver 10.26.160.32
 EOF'
 sudo chmod 644 /etc/resolv.conf
 
-# Add update_ifcfg to cron and execute on reboot
-sudo bash -c 'echo "@reboot root sleep 120 && bash /home/devlocal/update_ifcfg.sh" >> /etc/cron.d/update_ifcfg'
-sudo chmod 644 /etc/cron.d/update_ifcfg
+export IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
+if grep -q PEERDNS "$IFCFG"; then sudo -E sed -i 's/^PEERDNS.*/PEERDNS=no/' $IFCFG; else sudo -E bash -c 'echo "PEERDNS=no" >> $IFCFG'; fi
+
+# Remove HWADDR from NIC
+sudo -E sed -i '/HWADDR/d' $IFCFG
 
 # Install git
 sudo yum -y install git
