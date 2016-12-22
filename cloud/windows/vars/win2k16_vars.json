@@ -1,8 +1,0 @@
-{
-   "packer_winrm_username": "admin.server",
-   "packer_winrm_password": "Li1ab0c*",
-   "packer_output_directory": "/kvm-data/win2k16",
-   "packer_disk_size": "61440",
-   "packer_iso_checksum": "91d7b2ebcff099b3557570af7a8a5cd6",
-   "packer_iso_url": "/kvm-data/iso/en_windows_server_2016_x64_dvd_9327751.iso"
-}
