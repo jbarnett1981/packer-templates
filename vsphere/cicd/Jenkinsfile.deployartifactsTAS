@@ -1,0 +1,90 @@
+pipeline {
+       agent {
+      kubernetes {
+        label 'template-builder'
+        defaultContainer 'packer-govc'
+        yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+labels:
+  component: ci
+spec:
+  # Use service account that can deploy to all namespaces
+  serviceAccountName: jenkins
+  containers:
+  - name: packer-govc
+    image: docker.io/jbarnett1981/packer-govc:latest
+    imagePullPolicy: Always
+    command:
+    - cat
+    tty: true
+"""
+}
+    }
+    environment {
+        GOVC_INSECURE = '1'
+        GOVC_URL = 'sre-hci-dev-vc01.one.den.solidfire.net'
+        GOVC_CREDENTIALS = credentials('sre-hci-dev-vcenter-credentials')
+        GOVC_DATASTORE = 'NetApp-HCI-Datastore-01'
+        GOVC_NETWORK = 'NetApp HCI VDS 01-VM_Network'
+        GOVC_RESOURCE_POOL = '*/Resources'
+    }
+
+   stages {
+              stage ('Deploy TaS OVAs to Artifactory') {
+                steps {
+                    print getChangeString()
+                    sh '''#!/bin/bash
+                    create_ova () {
+                        govc export.ovf -vm $1 .
+                        cd $1
+                        tar -cf ../$1.ova .
+                    }
+                    export GOVC_USERNAME="${GOVC_CREDENTIALS_USR}"
+                    export GOVC_PASSWORD="${GOVC_CREDENTIALS_PSW}"
+                    arr=(`govc find /NetApp-HCI-Datacenter-01/vm/templates/client/ -type m | awk -F'/' '{print $7}'`)
+                    if [ ${#arr[@]} -gt  0 ]
+                    then 
+                        for i in ${arr[@]}; do create_ova $i; done
+                    else
+                        echo "No templates exist in this folder"
+                    fi
+                    '''
+                    rtUpload (
+                        serverId: 'Solidfire Artifactory',
+                        spec: """{
+                            "files": [
+                                {
+                                "pattern": "*.ova",
+                                "target": "artifactory/sre/vmware/templates/tas/"
+                                }
+                                ]
+                        }"""
+                    )
+                }
+            }
+   }
+}
+// get change log to be send over the mail
+@NonCPS
+def getChangeString() {
+    MAX_MSG_LEN = 100
+    def changeString = ""
+
+    echo "Gathering SCM changes"
+    def changeLogSets = currentBuild.changeSets
+    for (int i = 0; i < changeLogSets.size(); i++) {
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            truncated_msg = entry.msg.take(MAX_MSG_LEN)
+            changeString += " - ${truncated_msg} [${entry.author}]\n"
+        }
+    }
+
+    if (!changeString) {
+        changeString = "No new changes"
+    }
+    return changeString
+}

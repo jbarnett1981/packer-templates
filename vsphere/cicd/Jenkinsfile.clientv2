@@ -1,0 +1,149 @@
+#!groovy
+@Library('slack-notifier-lib') _ 
+
+pipeline {
+    agent {
+      kubernetes {
+        label 'template-builder'
+        yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+labels:
+  component: ci
+spec:
+  # Use service account that can deploy to all namespaces
+  serviceAccountName: jenkins
+  volumes:
+    - name: ova-volume
+      persistentVolumeClaim:
+        claimName: ova-storage-claim
+  containers:
+  - name: packer
+    image: hashicorp/packer:light
+    imagePullPolicy: Always
+    command:
+    - cat
+    tty: true
+  - name: ovftool
+    image: jbarnett1981/ovftool:latest
+    imagePullPolicy: Always
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - mountPath: /ova-storage
+        name: ova-volume
+"""
+}
+    }
+    environment {
+        VCSA_URL = 'sre-hci-dev-vc01.one.den.solidfire.net'
+        VCSA_CREDS = credentials('sre-hci-dev-vcenter-credentials')
+        VCSA_DATACENTER = 'NetApp-HCI-Datacenter-01'
+    }
+    stages {
+        stage ('Get latest code and setup env') {
+            steps {
+                container('packer') {
+                    checkout scm
+                    sh '''
+                    if ${SKIP_PACKER_BUILD}
+                    then 
+                        echo "Skipping packer build"
+                    else 
+                        wget https://github.com/jetbrains-infra/packer-builder-vsphere/releases/download/v2.3/packer-builder-vsphere-iso.linux
+                        chmod +x packer-builder-vsphere-iso.linux
+                    fi
+                    '''
+                }
+            }
+        }
+        stage ('Build') {
+            parallel {
+                stage ('Packer build CentOS 7') {
+                    steps {
+                        container('packer') {
+                            sh '''
+                            if ${SKIP_PACKER_BUILD}
+                            then 
+                                echo "Skipping packer build"
+                            else 
+                                packer build -force -var "build_id=${BUILD_ID}" -var "git_commit=${GIT_COMMIT}" -var-file=./var-files/vsphere-sre-hci.json centos/centos-76-sfclient-vsphere.json
+                            fi
+                            '''
+                        }
+                    }
+                    post {
+                        success {
+                            echo "Packer build success"
+                            container('ovftool') {
+                                sh 'ovftool --disableVerification --noSSLVerify --overwrite vi://${VCSA_CREDS_USR}:${VCSA_CREDS_PSW}@${VCSA_URL}/${VCSA_DATACENTER}/vm/templates/client/sfclient-template-centos-76 ./sfclient-template-centos-76.ova'
+                            }
+                        }
+                        failure {
+                            echo "Packer build failed"
+                        }
+                    }
+                }
+                stage ('Packer build Ubuntu1804') {
+                    steps {
+                        container('packer') {
+                            sh '''
+                            if ${SKIP_PACKER_BUILD}
+                            then 
+                                echo "Skipping packer build"
+                            else 
+                                packer build -force -var "build_id=${BUILD_ID}" -var "git_commit=${GIT_COMMIT}" -var-file=./var-files/vsphere-sre-hci.json ubuntu/ubuntu-1804-sfclient-vsphere.json
+                            fi
+                            '''
+                        }
+                    }
+                    post {
+                        success {
+                            echo "Packer build success"
+                            container('ovftool') {
+                                sh 'ovftool --disableVerification --noSSLVerify --overwrite vi://${VCSA_CREDS_USR}:${VCSA_CREDS_PSW}@${VCSA_URL}/${VCSA_DATACENTER}/vm/templates/client/sfclient-template-ubuntu-1804 ./sfclient-template-ubuntu-1804.ova'
+                            }
+                        }
+                        failure {
+                            echo "Packer build failed"
+                        }
+                    }
+                }
+            }
+        }
+        stage ('Create bundle') {
+            steps {
+                container('ovftool') {
+                    /*
+                    # nvram fix for vcenter 6.7 OVA --> vcenter < 6.7 
+                    # https://communities.vmware.com/thread/596814
+                    */
+                    sh '''
+                    curl -O http://sf-artifactory.solidfire.net/artifactory/sre/bits/ovafix.sh
+                    bash ovafix.sh
+                    chmod -R +rX *.ova
+                    '''
+                    rtUpload (
+                        serverId: 'Solidfire Artifactory',
+                        spec: """{
+                            "files": [
+                                {
+                                "pattern": "*.ova",
+                                "target": "artifactory/sre/vmware/templates/tas/"
+                                }
+                                ]
+                        }"""
+                    )
+                    notifySlack currentBuild.result
+                }
+            }
+        }
+    }
+    post {
+        always {
+            deleteDir()
+        }
+    }
+}

@@ -1,0 +1,61 @@
+{
+  "variables": {
+    "vmware_username": "{{ user `vcenter_username` }}",
+    "vmware_password": "{{ user `vcenter_password` }}",
+    "vm_name": "jbcentos77",
+    "convert_to_template": "true"
+  },
+  "sensitive-variables": [
+    "vcenter_username",
+    "vcenter_password"
+  ],
+  "builders": [
+    {
+      "type": "vsphere-iso",
+      "vcenter_server": "{{ user `vcenter_server` }}",
+      "username": "{{ user `vcenter_username` }}",
+      "password": "{{ user `vcenter_password` }}",
+      "insecure_connection": "true",
+      "vm_name": "{{ user `vm_name` }}",
+      "vm_version": 11,
+      "notes": "jenkins build id: {{ user `build_id` }}\ngit commit id: {{ user `git_commit` }}",
+      "datacenter": "{{ user `datacenter` }}",
+      "cluster": "{{ user `cluster` }}",
+      "datastore": "{{ user `datastore` }}",
+      "folder": "Cluster02-Development/ART:Appliance/SRE/templates",
+      "network": "{{ user `network` }}",
+      "resource_pool": "{{ user `resource_pool` }}",
+      "guest_os_type": "centos64Guest",
+      "ssh_username": "sf-admin",
+      "ssh_password": "solidfire",
+      "CPUs": 16,
+      "RAM": 24576,
+      "RAM_reserve_all": false,
+      "convert_to_template": "{{ user `convert_to_template` }}",
+      "disk_controller_type": "pvscsi",
+      "disk_size": 100000,
+      "disk_thin_provisioned": true,
+      "network_card": "vmxnet3",
+      "iso_paths": [
+        "[HCI-C02-CrossArt-DS-01] ISOs/CentOS-7-x86_64-Minimal-1908.iso"
+      ],
+      "floppy_files": [
+        "centos/kickstart/ks-sfclient-centos-77.cfg"
+      ],
+      "boot_command": [
+        "<tab>",
+        " text inst.ks=hd:fd0:/ks-sfclient-centos-77.cfg net.ifnames=0 biosdevname=0",
+        "<wait>",
+        "<enter>",
+        "<wait>",
+        "<enter>"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell-local",
+      "command": "govc vm.network.add -k -u {{ user `vcenter_username` }}:{{ user `vcenter_password` }}@{{ user `vcenter_server` }} -vm '{{ user `vm_name` }}' -net '{{ user `network` }}' -net.adapter vmxnet3"
+    }
+  ]
+}

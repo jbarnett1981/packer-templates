@@ -1,0 +1,69 @@
+{
+  "variables": {
+    "vmware_username": "{{ user `vcenter_username` }}",
+    "vmware_password": "{{ user `vcenter_password` }}",
+    "vm_name": "template-ubuntu-1604",
+    "convert_to_template": "true"
+  },
+  "sensitive-variables": [
+    "vcenter_username",
+    "vcenter_password"
+  ],
+  "builders": [
+    {
+      "type": "vsphere-iso",
+      "vcenter_server": "{{ user `vcenter_server` }}",
+      "username": "{{ user `vcenter_username` }}",
+      "password": "{{ user `vcenter_password` }}",
+      "insecure_connection": "true",
+      "vm_name": "{{ user `vm_name` }}",
+      "notes": "jenkins build id: {{ user `build_id` }}\ngit commit id: {{ user `git_commit` }}",
+      "datacenter": "{{ user `datacenter` }}",
+      "cluster": "{{ user `cluster` }}",
+      "host": "{{ user `host` }}",
+      "datastore": "{{ user `datastore` }}",
+      "folder": "templates",
+      "network": "{{ user `network` }}",
+      "resource_pool": "{{ user `resource_pool` }}",
+      "guest_os_type": "ubuntu64Guest",
+      "ssh_username": "solidfire",
+      "ssh_password": "solidfire",
+      "CPUs": 2,
+      "RAM": 4096,
+      "RAM_reserve_all": true,
+      "convert_to_template": "{{ user `convert_to_template` }}",
+      "disk_controller_type": "pvscsi",
+      "disk_size": 32768,
+      "disk_thin_provisioned": true,
+      "network_card": "vmxnet3",
+      "iso_paths": [
+        "[NetApp-HCI-Datastore-01] ISOs/ubuntu-16.04.5-server-amd64.iso"
+      ],
+      "floppy_files": [
+        "ubuntu/preseed/ubuntu-den-solidfire-net.cfg"
+      ],
+      "boot_command": [
+        "<enter><wait><f6><wait><esc><wait>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs>",
+        "/install/vmlinuz noapic ",
+        "preseed/file=/floppy/ubuntu-den-solidfire-net.cfg ",
+        "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
+        "hostname={{ .Name }} ",
+        "fb=false debconf/frontend=noninteractive ",
+        "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
+        "keyboard-configuration/variant=USA console-setup/ask_detect=false ",
+        "grub-installer/bootdev=/dev/sda ",
+        "initrd=/install/initrd.gz -- <enter>",
+        "<enter>"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+#!groovy
+@Library('slack-notifier-lib') _ 
+
+pipeline {
+
+    agent {
+      kubernetes {
+        label 'template-builder'
+        defaultContainer 'packer'
+        yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+labels:
+  component: ci
+spec:
+  # Use service account that can deploy to all namespaces
+  serviceAccountName: jenkins
+  containers:
+  - name: packer
+    image: hashicorp/packer:light
+    imagePullPolicy: Always
+    command:
+    - cat
+    tty: true
+  - name: ovftool
+    image: jbarnett1981/ovftool:latest
+    imagePullPolicy: Always
+    command:
+    - cat
+    tty: true
+"""
+}
+    }
+    environment {
+        VCSA_URL = 'sre-hci-dev-vc01.one.den.solidfire.net'
+        VCSA_CREDS = credentials('sre-hci-dev-vcenter-credentials')
+        VCSA_DATACENTER = 'NetApp-HCI-Datacenter-01'
+    }
+    stages {
+        stage ('Get latest code and setup env') {
+            steps {
+                checkout scm
+                sh '''
+                wget https://github.com/jetbrains-infra/packer-builder-vsphere/releases/download/v2.3/packer-builder-vsphere-iso.linux
+                chmod +x packer-builder-vsphere-iso.linux
+                '''
+            }
+        }
+        stage ('Build') {
+            parallel {
+                stage ('Packer build CentOS 7') {
+                    steps {
+                        sh '''
+                        if ${SKIP_PACKER_BUILD}
+                        then 
+                            echo "Skipping packer build"
+                        else 
+                            packer build -force -var "build_id=${BUILD_ID}" -var "git_commit=${GIT_COMMIT}" -var-file=./var-files/vsphere-sre-hci.json centos/centos-76-base-vsphere.json
+                        fi
+                        '''
+                    }
+                    post {
+                        success {
+                            echo "Packer build success"
+                            container('ovftool') {
+                                sh 'ovftool --disableVerification --noSSLVerify --overwrite vi://${VCSA_CREDS_USR}:${VCSA_CREDS_PSW}@${VCSA_URL}/${VCSA_DATACENTER}/vm/templates/template-centos-7.6 ./template-centos-76.ova'
+                            }
+                        }
+                        failure {
+                            echo "Packer build failed"
+                        }
+                    }
+                }
+                stage ('Packer build Ubuntu1604') {
+                    steps {
+                        sh '''
+                        if ${SKIP_PACKER_BUILD}
+                        then 
+                            echo "Skipping packer build"
+                        else
+                            packer build -force -var "build_id=${BUILD_ID}" -var "git_commit=${GIT_COMMIT}" -var-file=./var-files/vsphere-sre-hci.json ubuntu/ubuntu-1604-base-vsphere.json
+                        fi
+                        '''
+                    }
+                    post {
+                        success {
+                            echo "Packer build success"
+                            container('ovftool') {
+                                sh 'ovftool --disableVerification --noSSLVerify --overwrite vi://${VCSA_CREDS_USR}:${VCSA_CREDS_PSW}@${VCSA_URL}/${VCSA_DATACENTER}/vm/templates/template-ubuntu-1604 ./template-ubuntu-1604.ova'
+                            }
+                        }
+                        failure {
+                            echo "Packer build failed"
+                        }
+                    }
+                }
+            }
+            post {
+                always {
+                    sh '''
+                    chmod -R +rX *.ova
+                    '''
+                    rtUpload (
+                        serverId: 'Solidfire Artifactory',
+                        spec: """{
+                            "files": [
+                                {
+                                "pattern": "*.ova",
+                                "target": "artifactory/sre/vmware/templates/sre/"
+                                }
+                                ]
+                        }"""
+                    )
+                    notifySlack currentBuild.result
+                }
+            }
+        }
+    }
+}

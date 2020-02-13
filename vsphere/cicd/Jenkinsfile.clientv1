@@ -1,0 +1,127 @@
+#!groovy
+@Library('slack-notifier-lib') _ 
+
+podTemplate(workspaceVolume: dynamicPVC(requestsSize: "25Gi"), label: 'template-builder', containers: [
+containerTemplate(name: 'packer', image: 'jbarnett1981/packer-govc:latest', alwaysPullImage: true, ttyEnabled: true, command: 'cat'),
+containerTemplate(name: 'ovftool', image: 'jbarnett1981/ovftool:latest', alwaysPullImage: true, ttyEnabled: true, command: 'cat')],
+yaml:'''
+spec:
+  securityContext:
+    fsGroup: 1000
+''') {
+    node ('template-builder') {
+        stage ('Get latest code and setup env') {
+            container('packer') {
+                checkout scm
+                sh '''
+                if ${SKIP_PACKER_BUILD}
+                then 
+                    echo "Skipping packer build"
+                    echo "$GIT_BRANCH"
+                    echo "$BRANCH_NAME"
+                else 
+                    wget https://github.com/jetbrains-infra/packer-builder-vsphere/releases/download/v2.3/packer-builder-vsphere-iso.linux
+                    chmod +x packer-builder-vsphere-iso.linux
+                fi
+                '''
+            }
+        }
+        stage ('Build') {
+            parallel (
+                centos7: {
+                    stage ('Packer build CentOS 7') {
+                        container('packer') {
+                            sh '''
+                            if ${SKIP_PACKER_BUILD}
+                            then 
+                                echo "Skipping packer build"
+                            else 
+                                packer build -force -var "build_id=${BUILD_ID}" -var "git_commit=${GIT_COMMIT}" -var-file=./var-files/heartgard-sre.json centos/centos-77-sfclient-vsphere.json
+                            fi
+                            '''
+                        }
+                    }
+                    stage ('Export OVF and create OVA') {
+                        container('ovftool') {
+                            withCredentials([usernamePassword(
+                                credentialsId: 'heartgard-sre-credentials',
+                                usernameVariable: 'VCSA_CREDS_USR',
+                                passwordVariable: 'VCSA_CREDS_PSW',
+                            )]) {
+                                sh '''
+                                mkdir centos7
+                                ovftool --noNvramFile --disableVerification --noSSLVerify --overwrite vi://${VCSA_CREDS_USR}:${VCSA_CREDS_PSW}@heartgard.den.solidfire.net/NetApp-HCI-Datacenter-01/vm/Cluster02-Development/ART:Appliance/SRE/templates/sfclient-template-centos-77 ./centos7/sfclient-template-centos-77.ovf
+                                python3 ovf-update.py centos7/sfclient-template-centos-77.ovf
+                                sed -i "/\\\\.ovf/s/= .*/= `sha256sum centos7/*.ovf |cut -d " " -f 1`/;/nvram/d" centos7/*.mf
+                                ovftool centos7/sfclient-template-centos-77.ovf ./sfclient-template-centos-77.ova
+                                rm -rf centos7/
+                                '''
+                            }
+                        }
+                    }
+                },
+                ubuntu1804: {
+                    stage ('Packer build Ubuntu1804') {
+                        container('packer') {
+                            sh '''
+                            if ${SKIP_PACKER_BUILD}
+                            then 
+                                echo "Skipping packer build"
+                            else 
+                                packer build -force -var "build_id=${BUILD_ID}" -var "git_commit=${GIT_COMMIT}" -var-file=./var-files/heartgard-sre.json ubuntu/ubuntu-1804-sfclient-vsphere.json
+                            fi
+                            '''
+                        }
+                    }
+                    stage ('Export OVF and create OVA') {
+                        container('ovftool') {
+                            withCredentials([usernamePassword(
+                                credentialsId: 'heartgard-sre-credentials',
+                                usernameVariable: 'VCSA_CREDS_USR',
+                                passwordVariable: 'VCSA_CREDS_PSW',
+                            )]) {
+                                sh '''
+                                mkdir ubuntu1804
+                                ovftool --noNvramFile --disableVerification --noSSLVerify --overwrite vi://${VCSA_CREDS_USR}:${VCSA_CREDS_PSW}@heartgard.den.solidfire.net/NetApp-HCI-Datacenter-01/vm/Cluster02-Development/ART:Appliance/SRE/templates/sfclient-template-ubuntu-1804 ./ubuntu1804/sfclient-template-ubuntu-1804.ovf
+                                python3 ovf-update.py ubuntu1804/sfclient-template-ubuntu-1804.ovf
+                                sed -i "/\\\\.ovf/s/= .*/= `sha256sum ubuntu1804/*.ovf |cut -d " " -f 1`/;/nvram/d" ubuntu1804/*.mf
+                                ovftool ubuntu1804/sfclient-template-ubuntu-1804.ovf ./sfclient-template-ubuntu-1804.ova
+                                rm -rf ubuntu1804/
+                                '''
+                            }
+                        }
+                    }
+                }
+            )
+        }
+        stage ('Create bundle') {
+            container('ovftool') {
+                /*
+                nvram fix for vcenter 6.7 OVA --> vcenter < 6.7 
+                https://communities.vmware.com/thread/596814
+                only needed if deploying to vcenter 6.0
+                sh '''
+                curl -O http://sf-artifactory.solidfire.net/artifactory/sre/bits/ovafix.sh
+                bash ovafix.sh
+                chmod -R +rX *.ova
+                '''
+                */
+                sh '''
+                chmod -R +rX *.ova
+                '''
+                rtUpload (
+                    serverId: 'Solidfire Artifactory',
+                    spec: """{
+                        "files": [
+                            {
+                            "pattern": "*.ova",
+                            "target": "artifactory/sre/vmware/templates/tas/"
+                            }
+                            ]
+                    }"""
+                )
+                notifySlack currentBuild.result
+            }
+        }
+    }
+}

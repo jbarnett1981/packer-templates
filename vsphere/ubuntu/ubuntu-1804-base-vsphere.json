@@ -1,0 +1,69 @@
+{
+  "variables": {
+    "vmware_username": "{{ user `vcenter_username` }}",
+    "vmware_password": "{{ user `vcenter_password` }}",
+    "vm_name": "template-ubuntu-1804",
+    "convert_to_template": "true",
+    "preseed": "ubuntu1804.cfg"
+  },
+  "sensitive-variables": [
+    "vcenter_username",
+    "vcenter_password"
+  ],
+  "builders": [
+    {
+      "type": "vsphere-iso",
+      "vcenter_server": "{{ user `vcenter_server` }}",
+      "username": "{{ user `vcenter_username` }}",
+      "password": "{{ user `vcenter_password` }}",
+      "insecure_connection": "true",
+      "vm_name": "{{ user `vm_name` }}",
+      "vm_version": 11,
+      "notes": "jenkins build id: {{ user `build_id` }}\ngit commit id: {{ user `git_commit` }}",
+      "datacenter": "{{ user `datacenter` }}",
+      "cluster": "{{ user `cluster` }}",
+      "datastore": "{{ user `datastore` }}",
+      "folder": "ART:Appliance/SRE/templates",
+      "network": "{{ user `network` }}",
+      "resource_pool": "{{ user `resource_pool` }}",
+      "guest_os_type": "ubuntu64Guest",
+      "ssh_username": "solidfire",
+      "ssh_password": "solidfire",
+      "CPUs": 2,
+      "RAM": 2048,
+      "RAM_reserve_all": false,
+      "convert_to_template": "{{ user `convert_to_template` }}",
+      "disk_controller_type": "pvscsi",
+      "disk_size": 32768,
+      "disk_thin_provisioned": true,
+      "network_card": "vmxnet3",
+      "iso_paths": [
+        "[HCI-C02-CrossArt-DS-01] ISOs/ubuntu-18.04.3-server-amd64.iso"
+      ],
+      "floppy_files": [
+        "ubuntu/preseed/{{user `preseed`}}"
+      ],
+      "boot_command": [
+        "<esc><wait>",
+        "<esc><wait>",
+        "<enter><wait>",
+        "/install/vmlinuz<wait>",
+        " auto<wait>",
+        " console-setup/ask_detect=false<wait>",
+        " console-setup/layoutcode=us<wait>",
+        " debconf/frontend=noninteractive<wait>",
+        " debian-installer=en_US<wait>",
+        " fb=false<wait>",
+        " initrd=/install/initrd.gz<wait>",
+        " kbd-chooser/method=us<wait>",
+        " keyboard-configuration/layout=USA<wait>",
+        " keyboard-configuration/variant=USA<wait>",
+        " locale=en_US<wait>",
+        " netcfg/get_hostname={{ user `vm_name` }}<wait>",
+        " preseed/file=/floppy/{{user `preseed`}} ",
+        " -- <wait>",
+        "<enter><wait>"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "variables": {
+    "vmware_username": "{{ user `host_username` }}",
+    "vmware_password": "{{ user `host_password` }}",
+    "vm_name": "sfclient-template-centos-76-legacy",
+    "convert_to_template": "true"
+  },
+  "sensitive-variables": [
+    "host_username",
+    "host_password"
+  ],
+  "builders": [
+    {
+      "name": "{{ user `vm_name` }}",
+      "vm_name": "{{ user `vm_name` }}",
+      "type": "vmware-iso",
+      "guest_os_type": "ubuntu-64",
+      "format": "ova",
+      "tools_upload_flavor": "linux",
+      "headless": false,
+      "iso_url": "http://distro.ibiblio.org/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-Minimal-1908.iso",
+      "iso_checksum": "9a2c47d97b9975452f7d582264e9fc16d108ed8252ac6816239a3b58cef5c53d",
+      "iso_checksum_type": "sha256",
+      "vnc_disable_password": "True",
+      "ssh_username": "sf-admin",
+      "ssh_password": "solidfire",
+      "ssh_timeout": "15m",
+      "disk_type_id": "thin",
+      "floppy_files": [
+        "centos/kickstart/ks-sfclient-centos-76.cfg"
+      ],
+      "boot_command": [
+        "<tab>",
+        " text inst.ks=hd:fd0:/ks-sfclient-centos-76.cfg net.ifnames=0 biosdevname=0",
+        "<wait>",
+        "<enter>",
+        "<wait>",
+        "<enter>"
+      ],
+      "shutdown_command": "shutdown -P now",
+      "remote_type": "esx5",
+      "remote_host": "{{user `host`}}",
+      "remote_datastore": "{{ user `datastore` }}",
+      "remote_username": "{{ user `host_username` }}",
+      "remote_password": "{{ user `host_password` }}",
+      "keep_registered": true,
+      "vmx_data": {
+        "memsize": "2048",
+        "numvcpus": "2",
+        "ethernet0.networkName": "{{user `network`}}",
+        "ethernet0.present": "TRUE",
+        "ethernet0.startConnected": "TRUE",
+        "ethernet0.virtualDev": "vmxnet3",
+        "ethernet0.addressType": "generated",
+        "ethernet0.generatedAddressOffset": "0",
+        "ethernet0.wakeOnPcktRcv": "FALSE"
+      }
+    }
+  ]
+}

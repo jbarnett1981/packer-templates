@@ -1,0 +1,11 @@
+{
+    "vcenter_username": "administrator@vsphere.local",
+    "vcenter_password": "NetApp!23",
+    "vcenter_server": "ntap-hci-vc01.sddc.netapp.com",
+    "datacenter": "NetApp-HCI-Datacenter-01",
+    "cluster": "NetApp-HCI-Cluster-01",
+    "host": "10.61.185.62",
+    "datastore": "NetApp-HCI-Datastore-02",
+    "network": "NetApp HCI VDS 01-VM_Network",
+    "resource_pool": "sre-latest"
+}
